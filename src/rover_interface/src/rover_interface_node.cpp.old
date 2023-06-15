@@ -1,0 +1,566 @@
+#if defined(WIN32)
+  #include <SDKDDKVer.h>
+#endif
+
+#include <cstdio>
+#include <memory>
+#include <sstream>
+#include <functional>
+#include "asio.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
+#include "rover_interface_messages/msg/byte_buffer.hpp"
+#include "rover_interface_messages/msg/stxetx_frame.hpp"
+#include "rover_interface/fsm.hpp"
+// #include "rover_interface/stxetx_protocol.h"
+
+#define ASCII_STX 0x02
+#define ASCII_ETX 0x03
+#define ASCII_ESCAPE (uint8_t)'%'
+
+// #define USE_SHARED_PTR
+#define USE_STATIC_ALLOC
+
+using std::placeholders::_1;
+using std::placeholders::_2;
+
+#define RECEIVE_BUFFER_SIZE 1024
+#define TRANSMIT_BUFFER_SIZE 1024
+
+static volatile bool g_io_context_ready = false;
+
+using FrameMsg = rover_interface_messages::msg::StxetxFrame;
+using ByteArrayMsg = rover_interface_messages::msg::ByteBuffer;
+
+static std::string byte_buffer_to_hex_string_(const uint8_t* p_buffer, size_t length);
+
+class RoverInterfaceNode : public rclcpp::Node
+{
+public:
+  RoverInterfaceNode(std::shared_ptr<asio::io_context> p_io);
+  virtual ~RoverInterfaceNode();
+
+private:
+  std::shared_ptr<asio::io_context> p_io_;
+  asio::serial_port serial_port_;
+  rclcpp::Publisher<FrameMsg>::SharedPtr p_publisher_;
+  rclcpp::Subscription<FrameMsg>::SharedPtr p_subscriber_;
+
+  FiniteStateMachine fsm_;
+
+  void on_timer_();
+  void on_data_received_(const asio::error_code& ec, size_t bytes_transferred);
+  void on_data_transmit_completed_(const asio::error_code& ec, size_t bytes_transferred);
+  void process_received_bytes_(size_t bytes_to_process);
+  void rearm_serial_port_();
+  void initialize_fsm_();
+  void reset_processed_buffer_();
+  void write_byte_to_processed_buffer_(uint8_t x);
+  void on_full_frame_received_();
+  void on_transmit_request_received_(FrameMsg::ConstSharedPtr p_msg);
+
+#if defined(USE_SHARED_PTR)
+  std::shared_ptr<uint8_t> p_receive_buffer_;
+  std::shared_ptr<uint8_t> p_processed_buffer_;
+  std::shared_ptr<uint8_t> p_transmit_buffer_;
+#elif defined(USE_STATIC_ALLOC)
+  uint8_t p_receive_buffer_[RECEIVE_BUFFER_SIZE];
+  uint8_t p_processed_buffer_[RECEIVE_BUFFER_SIZE];
+  uint8_t p_transmit_buffer_[TRANSMIT_BUFFER_SIZE];
+#else
+  uint8_t* p_receive_buffer_;
+  uint8_t* p_processed_buffer_;
+  uint8_t* p_transmit_buffer_;
+#endif
+
+  size_t bytes_processed_count_;
+};
+
+int main(int argc, char ** argv)
+{
+  rclcpp::init(argc, argv);
+  auto p_io_ctx = std::make_shared<asio::io_context>();
+  
+  // auto io_ctx_handle = p_io_ctx.get();
+  
+  auto asio_event_thread = std::thread([p_io_ctx](){
+    std::cout << "ASIO Event Thread Starting..." << std::endl;
+    auto io_work = asio::make_work_guard(p_io_ctx->get_executor());
+    std::cout << "ASIO Event Thread Started." << std::endl;
+    g_io_context_ready = true;
+    p_io_ctx->run();
+    std::cout << "ASIO Event Thread Finished." << std::endl;
+  });
+
+  auto node = std::make_shared<RoverInterfaceNode>(p_io_ctx);
+
+  rclcpp::spin(node);
+  rclcpp::shutdown();
+
+  p_io_ctx->stop();
+  asio_event_thread.join();
+
+  return 0;
+}
+
+RoverInterfaceNode::RoverInterfaceNode(std::shared_ptr<asio::io_context> p_io)
+: rclcpp::Node("rover_interface_node"),
+  p_io_(p_io),
+  fsm_(FiniteStateMachine::STATE_IDLE, nullptr, *this),
+  bytes_processed_count_(0),
+  serial_port_(*p_io)
+{
+  const std::string port_name = "COM3";
+  const int baud_rate = 9600;
+  const std::string publisher_name = "/rover_receiver";
+  const std::string subscriber_name = "/rover_transmitter";
+  const int publisher_qos = 10;
+  const int subscriber_qos = 10;
+
+  RCLCPP_DEBUG( this->get_logger(), "Creating publisher at '%s'...", publisher_name.c_str());
+  p_publisher_ = this->create_publisher<FrameMsg>(publisher_name, publisher_qos);
+  RCLCPP_DEBUG( this->get_logger(), "Publisher created...");
+
+  RCLCPP_DEBUG( this->get_logger(), "Creating subscriber at '%s'...", subscriber_name.c_str());
+  auto callback_publisher = std::bind(&RoverInterfaceNode::on_transmit_request_received_, this, _1);
+  p_subscriber_ = this->create_subscription<FrameMsg>(subscriber_name, subscriber_qos, callback_publisher);
+  RCLCPP_DEBUG( this->get_logger(), "Subscriber created...");
+
+  RCLCPP_DEBUG( this->get_logger(), "Initializing FSM...");
+  initialize_fsm_();
+  RCLCPP_DEBUG( this->get_logger(), "FSM initialized.");
+
+  RCLCPP_DEBUG( this->get_logger(), "Initializing serial port...");
+  RCLCPP_DEBUG( this->get_logger(), "Trying to open serial port...");
+  asio::error_code ec;
+  serial_port_.open(port_name, ec);
+
+  if (ec)
+  {
+    RCLCPP_FATAL(
+      this->get_logger(),
+      "Could not open '%s' with Baud Rate '%d'",
+      port_name,
+      baud_rate
+    );
+    exit(-1);
+  }
+
+  serial_port_.cancel();
+
+  RCLCPP_DEBUG( this->get_logger(), "Setting serial port settings...");
+  serial_port_.set_option(asio::serial_port_base::baud_rate(baud_rate));
+  serial_port_.set_option(asio::serial_port_base::character_size(8));
+  serial_port_.set_option(asio::serial_port_base::parity(asio::serial_port_base::parity::none));
+  serial_port_.set_option(asio::serial_port_base::stop_bits(asio::serial_port_base::stop_bits::one));
+  RCLCPP_DEBUG( this->get_logger(), "Serial port settings set.");
+
+
+  RCLCPP_INFO(
+    this->get_logger(),
+    "Port '%s' opened with Baud Rate '%d'",
+    port_name,
+    baud_rate
+  );
+
+  RCLCPP_DEBUG( this->get_logger(), "Initializing buffers with size %ld...", RECEIVE_BUFFER_SIZE);
+#if defined(USE_SHARED_PTR)
+  p_receive_buffer_ = std::make_shared<uint8_t>(RECEIVE_BUFFER_SIZE);
+  p_processed_buffer_ = std::make_shared<uint8_t>(RECEIVE_BUFFER_SIZE);
+  p_transmit_buffer_ = std::make_shared<uint8_t>(RECEIVE_BUFFER_SIZE);
+#elif defined(USE_STATIC_ALLOC)
+  ; // NOTHING
+#else
+  p_receive_buffer_ = new uint8_t[RECEIVE_BUFFER_SIZE];
+  p_processed_buffer_ = new uint8_t[RECEIVE_BUFFER_SIZE];
+  p_transmit_buffer_ = new uint8_t[TRANSMIT_BUFFER_SIZE];
+#endif
+  RCLCPP_DEBUG( this->get_logger(), "Buffers initialized.");
+
+  RCLCPP_DEBUG( this->get_logger(), "Waiting for ASIO io_context to be ready...");
+  while (!g_io_context_ready)
+  {
+    RCLCPP_DEBUG( this->get_logger(), "ASIO io_context not running, waiting...");
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
+  }
+  // Give some time to io_context.run()
+  rclcpp::sleep_for(std::chrono::milliseconds(100));
+  RCLCPP_DEBUG(this->get_logger(), "ASIO io_context running.");
+  rearm_serial_port_();
+  RCLCPP_DEBUG( this->get_logger(), "Callbacks armed.");
+}
+
+RoverInterfaceNode::~RoverInterfaceNode()
+{
+  RCLCPP_INFO(this->get_logger(), "Closing serial port...");
+  serial_port_.cancel();
+  serial_port_.close();
+  RCLCPP_INFO(this->get_logger(), "Serial port closed.");
+
+#if !defined(USE_SHARED_PTR) && !defined(USE_STATIC_ALLOC)
+  if (p_processed_buffer_ != nullptr)
+  {
+    delete[] p_processed_buffer_;
+    p_processed_buffer_ = nullptr;
+  }
+  
+  if (p_receive_buffer_ != nullptr)
+  {
+    delete[] p_receive_buffer_;
+    p_receive_buffer_ = nullptr;
+  }
+
+  if (p_transmit_buffer_ != nullptr)
+  {
+    delete[] p_transmit_buffer_;
+    p_transmit_buffer_ = nullptr;
+  }
+#endif
+}
+
+void RoverInterfaceNode::on_data_received_(const asio::error_code &ec, size_t bytes_transferred)
+{
+  if (!ec)
+  {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "Received %d bytes.\n%s",
+      bytes_transferred,
+      byte_buffer_to_hex_string_(p_receive_buffer_, bytes_transferred).c_str()
+    );
+
+    const int received_data_upper_limit = RECEIVE_BUFFER_SIZE; 
+    int bytes_to_save = (bytes_transferred > received_data_upper_limit)
+        ? received_data_upper_limit
+        : bytes_transferred;
+
+    process_received_bytes_(bytes_to_save);
+
+#if defined(USE_SHARED_PTR)
+  std::fill(p_receive_buffer_.get(), p_receive_buffer_.get() + bytes_to_save, 0);
+#else
+  memset(p_receive_buffer_, 0, bytes_to_save);
+#endif
+
+    rearm_serial_port_();
+  }
+  else
+  {
+    RCLCPP_FATAL(this->get_logger(), "ASIO data reception error '%s'", ec.message().c_str());
+  }
+}
+
+void RoverInterfaceNode::on_data_transmit_completed_(const asio::error_code &ec, size_t bytes_transferred)
+{
+  if(ec)
+  {
+    RCLCPP_FATAL(
+      this->get_logger(),
+      "ASIO data write error '%s'",
+      ec.message().c_str()
+    );
+    return;
+  }
+
+  RCLCPP_DEBUG(this->get_logger(), "Successfully written %d bytes.", bytes_transferred);
+}
+
+void RoverInterfaceNode::process_received_bytes_(size_t bytes_to_process)
+{
+  const size_t space_left_in_buffer = (RECEIVE_BUFFER_SIZE - bytes_processed_count_);
+  const size_t n = (bytes_to_process >= space_left_in_buffer) ? space_left_in_buffer : bytes_to_process;
+  
+  // const size_t offset = bytes_processed_count_;
+
+#if defined(USE_SHARED_PTR)
+  uint8_t* p_buffer_ = p_receive_buffer_.get();
+#else
+  uint8_t* p_buffer_ = p_receive_buffer_;
+#endif
+
+  for (size_t i = 0; i < n; i++)
+  {
+      uint8_t byte_ = p_buffer_[i];
+      FiniteStateMachine::FSM_Event event = FiniteStateMachine::EVT_NONE;
+
+      switch (byte_)
+      {
+      case ASCII_STX:
+        event = FiniteStateMachine::EVT_RECEIVED_STX;
+        break;
+
+      case ASCII_ETX:
+        event = FiniteStateMachine::EVT_RECEIVED_ETX;
+        break;
+
+      case ASCII_ESCAPE:
+        event = FiniteStateMachine::EVT_RECEIVED_ESC;
+        break;
+      
+      default:
+        event = FiniteStateMachine::EVT_RECEIVED_DATA;
+        break;
+      }
+
+      fsm_.ProcessEvent(event, byte_);
+  }
+  
+}
+
+
+void RoverInterfaceNode::rearm_serial_port_()
+{
+  RCLCPP_DEBUG(this->get_logger(), "Rearming serial port");
+#if defined(USE_SHARED_PTR)
+  uint8_t* p_buffer_ = p_receive_buffer_.get();
+#else
+  uint8_t* p_buffer_ = p_receive_buffer_;
+#endif
+  auto receive_buffer = asio::buffer(p_buffer_, RECEIVE_BUFFER_SIZE);
+  auto receive_callback = std::bind(&RoverInterfaceNode::on_data_received_, this, _1, _2);
+  serial_port_.async_read_some(receive_buffer, receive_callback);
+}
+
+void RoverInterfaceNode::initialize_fsm_()
+{
+  auto callback_error = [this](uint8_t x){
+    RCLCPP_DEBUG(this->get_logger(), "callback_error '0x%02X'", x);
+    RCLCPP_WARN(this->get_logger(), "Invalid character 0x'%02X' received", x);
+    this->reset_processed_buffer_();
+  };
+
+  auto callback_frame_finished = [this](uint8_t x /* ETX */){
+    RCLCPP_DEBUG(this->get_logger(), "callback_frame_finished '0x%02X'", x);
+    this->write_byte_to_processed_buffer_(x);
+    RCLCPP_DEBUG(this->get_logger(), "Full frame received.");
+    this->on_full_frame_received_();
+  };
+
+  auto callback_frame_started = [this](uint8_t x /* STX */){
+    RCLCPP_DEBUG(this->get_logger(), "callback_frame_started '0x%02X'", x);
+    RCLCPP_DEBUG(this->get_logger(), "Started receiving frame.");
+    this->write_byte_to_processed_buffer_(x);
+  };
+
+  auto callback_byte_escaped = [this](uint8_t x /* ASCII_ESCAPE */){
+    RCLCPP_DEBUG(this->get_logger(), "callback_byte_escaped '0x%02X'", x);
+    ; // Do nothing (do not write escape byte)
+  };
+
+  auto callback_write_data_byte = [this](uint8_t x){
+      RCLCPP_DEBUG(this->get_logger(), "callback_write_data_byte '0x%02X'", x);
+      this->write_byte_to_processed_buffer_(x);
+  };
+
+  auto callback_do_void = [this](uint8_t){
+    RCLCPP_DEBUG(this->get_logger(), "callback_do_void");
+    ; // DO NOTHING
+  };
+
+  using State = FiniteStateMachine::FSM_State;
+  using Event = FiniteStateMachine::FSM_Event;
+
+  // STATE_IDLE
+  fsm_.AddTransition(State::STATE_IDLE, Event::EVT_RECEIVED_STX,  State::STATE_FRAME_STARTED, callback_frame_started);
+  fsm_.AddTransition(State::STATE_IDLE, Event::EVT_RECEIVED_ETX,  State::STATE_IDLE,          callback_error);
+  fsm_.AddTransition(State::STATE_IDLE, Event::EVT_RECEIVED_DATA, State::STATE_IDLE,          callback_error);
+  fsm_.AddTransition(State::STATE_IDLE, Event::EVT_RECEIVED_ESC,  State::STATE_IDLE,          callback_error);
+
+  // STATE_FRAME_STARTED
+  fsm_.AddTransition(State::STATE_FRAME_STARTED, Event::EVT_RECEIVED_STX,  State::STATE_IDLE,           callback_error);
+  fsm_.AddTransition(State::STATE_FRAME_STARTED, Event::EVT_RECEIVED_ETX,  State::STATE_IDLE,           callback_frame_finished);
+  fsm_.AddTransition(State::STATE_FRAME_STARTED, Event::EVT_RECEIVED_DATA, State::STATE_FRAME_STARTED,  callback_write_data_byte);
+  fsm_.AddTransition(State::STATE_FRAME_STARTED, Event::EVT_RECEIVED_ESC,  State::STATE_BYTE_ESCAPED,   callback_do_void);
+
+  // STATE_BYTE_ESCAPED
+  fsm_.AddTransition(State::STATE_BYTE_ESCAPED, Event::EVT_RECEIVED_STX,  State::STATE_FRAME_STARTED, callback_write_data_byte);
+  fsm_.AddTransition(State::STATE_BYTE_ESCAPED, Event::EVT_RECEIVED_ETX,  State::STATE_FRAME_STARTED, callback_write_data_byte);
+  fsm_.AddTransition(State::STATE_BYTE_ESCAPED, Event::EVT_RECEIVED_DATA, State::STATE_FRAME_STARTED, callback_write_data_byte);
+  fsm_.AddTransition(State::STATE_BYTE_ESCAPED, Event::EVT_RECEIVED_ESC,  State::STATE_FRAME_STARTED, callback_write_data_byte);
+}
+
+void RoverInterfaceNode::reset_processed_buffer_()
+{
+#if defined(USE_SHARED_PTR)
+  std::fill(p_processed_buffer_.get(), p_processed_buffer_.get() + bytes_processed_count_, 0);
+#else
+  memset(p_processed_buffer_, 0, bytes_processed_count_);
+#endif
+
+  bytes_processed_count_ = 0;
+}
+
+void RoverInterfaceNode::write_byte_to_processed_buffer_(uint8_t x)
+{
+  if (bytes_processed_count_ >= RECEIVE_BUFFER_SIZE)
+  {
+    RCLCPP_FATAL(
+      this->get_logger(),
+      "Cannot process anymore bytes. Processed %ld out of max %ld",
+      bytes_processed_count_,
+      RECEIVE_BUFFER_SIZE
+    );
+    return;
+  }
+
+#if defined(USE_SHARED_PTR)
+  uint8_t* p_buffer_ = p_processed_buffer_.get();
+#else
+  uint8_t* p_buffer_ = p_processed_buffer_;
+#endif
+
+  p_buffer_[bytes_processed_count_++] = x; 
+}
+
+void RoverInterfaceNode::on_full_frame_received_()
+{
+  // Check frame integrity
+
+  /* STX | TYPE | FLAGS | LEN | (NO PAYLOAD) | CHECKSUM | ETX */
+  const size_t minimal_frame_size = 6;
+
+  if(bytes_processed_count_ < minimal_frame_size)
+  {
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Actual frame size (%d) is shorter than minimum required size (%d)\n%s",
+      bytes_processed_count_,
+      minimal_frame_size,
+      byte_buffer_to_hex_string_(p_processed_buffer_, bytes_processed_count_).c_str()
+    );
+    this->reset_processed_buffer_();
+    return;
+  }
+
+  auto msg = FrameMsg();
+
+  const size_t offset_type = 1;
+  const size_t offset_flags = 2;
+  const size_t offset_length = 3;
+  const size_t offset_payload = 4;
+  
+  /* STX = p_processed_buffer_[0] */
+  msg.msg_type = p_processed_buffer_[offset_type];
+  msg.flags = p_processed_buffer_[offset_flags];
+  msg.length = p_processed_buffer_[offset_length];
+
+  const size_t offset_checksum = 4 + msg.length;
+  const size_t offset_etx = offset_checksum + 1;
+
+  // Check if payload length is invalid
+  const size_t expected_etx_offset = bytes_processed_count_ - 1;
+  if (offset_etx != expected_etx_offset)
+  {
+    const size_t actual_frame_size = offset_etx + 1;
+    RCLCPP_WARN(
+      this->get_logger(),
+      "Actual frame size (%d) is not the same as expected size (%d)\n%s",
+      actual_frame_size,
+      bytes_processed_count_,
+      byte_buffer_to_hex_string_(p_processed_buffer_, actual_frame_size).c_str()
+    );
+    this->reset_processed_buffer_();
+    return;
+  }
+  
+  // From this point on, frame is confirmed to be valid
+  // Decode payload
+
+  msg.checksum = p_processed_buffer_[offset_checksum];
+  const uint8_t* it_payload_start = p_processed_buffer_ + offset_payload;
+  const uint8_t* it_payload_end = it_payload_start + msg.length;
+  msg.payload = std::vector<uint8_t>(it_payload_start, it_payload_end);
+  
+  // TODO: Verify checksum
+  p_publisher_->publish(msg);
+
+
+  RCLCPP_DEBUG(this->get_logger(), "Frame published!");
+  this->reset_processed_buffer_();
+}
+
+static inline uint8_t* stxetx_write_to_buffer_noescape(uint8_t* p_buffer_, uint8_t byte_)
+{
+  *p_buffer_ = byte_;
+  return ++p_buffer_;
+}
+
+// Handles escaping, returns iterator to rest of buffer (byte after last written)
+static inline uint8_t* stxetx_write_to_buffer(uint8_t* p_buffer_, uint8_t byte_)
+{
+  if(byte_ == ASCII_ESCAPE || byte_ == ASCII_STX || byte_ == ASCII_ETX)
+  {
+    p_buffer_ = stxetx_write_to_buffer_noescape(p_buffer_, ASCII_ESCAPE);
+  }
+  return stxetx_write_to_buffer_noescape(p_buffer_, byte_);
+}
+
+
+void RoverInterfaceNode::on_transmit_request_received_(FrameMsg::ConstSharedPtr p_msg)
+{
+  std::fill(p_transmit_buffer_, p_transmit_buffer_ + TRANSMIT_BUFFER_SIZE, 0);
+
+  uint8_t* it = p_transmit_buffer_;
+
+  it = stxetx_write_to_buffer_noescape(it, ASCII_STX);
+  it = stxetx_write_to_buffer(it, p_msg->msg_type);
+  it = stxetx_write_to_buffer(it, p_msg->flags);
+  it = stxetx_write_to_buffer(it, p_msg->length);
+
+  // const size_t offset_checksum = (size_t)(it - p_transmit_buffer_) + p_msg->length;
+  // const size_t offset_etx = offset_checksum + 1;
+
+  // size_t actual_msg_size = offset_etx + 1;
+  // if(actual_msg_size >= TRANSMIT_BUFFER_SIZE)
+  // {
+  //   RCLCPP_WARN(
+  //     this->get_logger(),
+  //     "Received request to transmit frame of size %d bytes which is larger than max. %d bytes.",
+  //     actual_msg_size,
+  //     TRANSMIT_BUFFER_SIZE
+  //   );
+  //   std::fill(p_transmit_buffer_, p_transmit_buffer_ + TRANSMIT_BUFFER_SIZE, 0);
+  //   return;
+  // }
+
+  std::for_each(p_msg->payload.begin(), p_msg->payload.end(), [&it](uint8_t x){
+    it = stxetx_write_to_buffer(it, x);
+  });
+
+  it = stxetx_write_to_buffer(it, p_msg->checksum); // TODO
+  it = stxetx_write_to_buffer_noescape(it, ASCII_ETX);
+
+  size_t actual_msg_size = (size_t)(it - p_transmit_buffer_);
+
+  RCLCPP_DEBUG(
+    this->get_logger(),
+    "Transmitting message\n%s",
+    byte_buffer_to_hex_string_(p_transmit_buffer_, actual_msg_size).c_str()
+  );
+
+  auto callback_write_complete = std::bind(&RoverInterfaceNode::on_data_transmit_completed_, this, _1, _2);
+  serial_port_.async_write_some(
+    asio::buffer(p_transmit_buffer_, actual_msg_size),
+    callback_write_complete
+  );
+
+}
+
+std::string byte_buffer_to_hex_string_(const uint8_t *p_buffer, size_t length)
+{
+  const size_t bytes_in_row = 8;
+
+  std::stringstream ss;
+
+  ss << std::hex << std::setfill('0');
+
+  for (size_t i = 0; i < length; i++)
+  {
+    if (i % bytes_in_row == 0)
+    {
+      ss << std::endl;
+    }
+    ss << "0x" << std::setw(2) << (unsigned)p_buffer[i] << " ";
+  }
+  return ss.str();
+}
