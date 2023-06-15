@@ -1,0 +1,5 @@
+rover_pose_estimator_node:
+  ros__parameters:
+    position_input_topic: /turtle1/pose
+    position_output_topic: /position_estimate
+    broadcast_rate_ms:  100

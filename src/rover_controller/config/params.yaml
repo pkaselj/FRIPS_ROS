@@ -1,0 +1,7 @@
+rover_controller_node:
+  ros__parameters:
+    command_topic: /rover_heading
+    position_topic: /position_estimate
+    setpoint_topic: /setpoint
+    publish_rate_ms: 100
+    max_speed_magnitude: 0.5

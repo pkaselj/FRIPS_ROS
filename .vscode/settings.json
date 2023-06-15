@@ -1,0 +1,10 @@
+{
+    "python.autoComplete.extraPaths": [
+        "C:\\ci\\ws\\install\\lib\\python3.8\\dist-packages",
+        "A:\\dev\\ros2_humble\\Lib\\site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "C:\\ci\\ws\\install\\lib\\python3.8\\dist-packages",
+        "A:\\dev\\ros2_humble\\Lib\\site-packages"
+    ]
+}

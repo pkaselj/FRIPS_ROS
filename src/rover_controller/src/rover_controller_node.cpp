@@ -1,6 +1,6 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
-#include "rover_controller_node/msg/rover_heading.hpp"
+#include "rover_messages/msg/rover_heading.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include <chrono>
@@ -9,7 +9,7 @@
 
 #define EPSILON 0.001f
 
-using CommandMsg = rover_controller_node::msg::RoverHeading;
+using CommandMsg = rover_messages::msg::RoverHeading;
 using PositionMsg = geometry_msgs::msg::Pose;
 
 using std::placeholders::_1;

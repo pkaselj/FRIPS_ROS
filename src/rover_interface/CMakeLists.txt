@@ -16,7 +16,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(rover_interface_messages REQUIRED)
+find_package(rover_messages REQUIRED)
 #find_package(asio REQUIRED)
 
 add_library(stxetx_parse_fsm include/${PROJECT_NAME}/fsm.hpp src/fsm.cpp)
@@ -51,11 +51,18 @@ ament_target_dependencies(
   rover_interface_node
   "rclcpp"
   "std_msgs"
-  "rover_interface_messages"
+  "rover_messages"
 )
 
 install(TARGETS rover_interface_node
   DESTINATION lib/${PROJECT_NAME})
+
+install(
+    DIRECTORY
+    config
+    DESTINATION
+    share/${PROJECT_NAME}
+  )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

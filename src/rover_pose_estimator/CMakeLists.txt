@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(turtlesim REQUIRED)
 
 add_executable(rover_pose_estimator_node src/rover_pose_estimator_node.cpp)
 target_include_directories(rover_pose_estimator_node PUBLIC
@@ -19,10 +20,18 @@ ament_target_dependencies(
   rover_pose_estimator_node
   "rclcpp"
   "geometry_msgs"
+  "turtlesim"
 )
 
 install(TARGETS rover_pose_estimator_node
   DESTINATION lib/${PROJECT_NAME})
+
+install(
+    DIRECTORY
+    config
+    DESTINATION
+    share/${PROJECT_NAME}
+  )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

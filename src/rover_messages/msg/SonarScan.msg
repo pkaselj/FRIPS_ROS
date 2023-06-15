@@ -1,0 +1,12 @@
+float32 distance_north_left
+float32 distance_north_right
+float32 distance_north_east_left
+float32 distance_north_east_right
+float32 distance_north_west_left
+float32 distance_north_west_right
+float32 distance_south_left
+float32 distance_south_right
+float32 distance_south_east_left
+float32 distance_south_east_right
+float32 distance_south_west_left
+float32 distance_south_west_right

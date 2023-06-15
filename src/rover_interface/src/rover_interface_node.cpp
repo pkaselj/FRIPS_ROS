@@ -9,8 +9,8 @@
 #include "asio.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "rover_interface_messages/msg/byte_buffer.hpp"
-#include "rover_interface_messages/msg/stxetx_frame.hpp"
+#include "rover_messages/msg/byte_buffer.hpp"
+#include "rover_messages/msg/stxetx_frame.hpp"
 #include "rover_interface/fsm.hpp"
 #include "rover_interface/stxetx_protocol.h"
 
@@ -24,8 +24,8 @@ using std::placeholders::_2;
 
 static volatile bool g_io_context_ready = false;
 
-using FrameMsg = rover_interface_messages::msg::StxetxFrame;
-using ByteArrayMsg = rover_interface_messages::msg::ByteBuffer;
+using FrameMsg = rover_messages::msg::StxetxFrame;
+using ByteArrayMsg = rover_messages::msg::ByteBuffer;
 
 static std::string byte_buffer_to_hex_string_(const uint8_t* p_buffer, size_t length);
 
@@ -99,12 +99,19 @@ RoverInterfaceNode::RoverInterfaceNode(std::shared_ptr<asio::io_context> p_io)
   frames_payload_byte_count_(0),
   serial_port_(*p_io)
 {
-  const std::string port_name = "COM3";
-  const int baud_rate = 9600;
-  const std::string publisher_name = "/rover_receiver";
-  const std::string subscriber_name = "/rover_transmitter";
-  const int publisher_qos = 10;
-  const int subscriber_qos = 10;
+  this->declare_parameter("port_name", "COM3");
+  this->declare_parameter("baud_rate", 9600);
+  this->declare_parameter("received_msg_broadcast", "/rover_receiver");
+  this->declare_parameter("transmit_request", "/rover_transmitter");
+  this->declare_parameter("received_msg_broadcast_qos", 10);
+  this->declare_parameter("transmit_request_qos", 10);
+
+  const std::string port_name = this->get_parameter("port_name").as_string();
+  const int baud_rate = this->get_parameter("baud_rate").as_int();
+  const std::string publisher_name = this->get_parameter("received_msg_broadcast").as_string();
+  const std::string subscriber_name = this->get_parameter("transmit_request").as_string();
+  const int publisher_qos = this->get_parameter("received_msg_broadcast_qos").as_int();
+  const int subscriber_qos = this->get_parameter("transmit_request_qos").as_int();
 
   RCLCPP_DEBUG( this->get_logger(), "Creating publisher at '%s'...", publisher_name.c_str());
   p_publisher_ = this->create_publisher<FrameMsg>(publisher_name, publisher_qos);

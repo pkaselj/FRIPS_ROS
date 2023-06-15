@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(rover_messages REQUIRED)
 
 add_executable(rover_controller_node src/rover_controller_node.cpp)
 target_include_directories(rover_controller_node PUBLIC
@@ -19,10 +20,18 @@ ament_target_dependencies(
   rover_controller_node
   "rclcpp"
   "geometry_msgs"
+  "rover_messages"
 )
 
 install(TARGETS rover_controller_node
   DESTINATION lib/${PROJECT_NAME})
+
+install(
+  DIRECTORY
+  config
+  DESTINATION
+  share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
