@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(rover_messages)
+project(rover_interface_definition)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -10,16 +10,26 @@ find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+# let the compiler search for headers in the include folder
+include_directories(include)
+ 
+add_library(rover_interface_definition src/stxetx_protocol.c)
+ 
+ament_export_targets(rover_interface_definition HAS_LIBRARY_TARGET)
+ 
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+)
 
-find_package(rosidl_default_generators REQUIRED)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/ByteBuffer.msg"
-  "msg/StxetxFrame.msg"
-  "msg/RoverHeading.msg"
-  "msg/Command.msg"
-  "msg/SonarScan.msg"
-  "msg/Odometry.msg"
+install(
+  TARGETS rover_interface_definition
+  EXPORT rover_interface_definition
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
 )
 
 if(BUILD_TESTING)

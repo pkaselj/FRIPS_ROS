@@ -1,0 +1,10 @@
+rover_protocol_hub_node:
+  ros__parameters:
+    rover_msg_subscriber_topic: /rover_receiver
+    rover_msg_subscriber_qos: 10
+    rover_msg_publisher_topic: /rover_transmitter
+    rover_msg_publisher_qos: 10
+    odometry_publisher_topic: /odometry_publisher_topic
+    odometry_publisher_qos: 10
+    command_listener_topic: /command_listener_topic
+    command_listener_qos: 10

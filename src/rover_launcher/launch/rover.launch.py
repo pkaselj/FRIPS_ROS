@@ -43,5 +43,15 @@ def generate_launch_description():
                 '--ros-args',
                 '--log-level', 'INFO'
             )
+        ),
+        Node(
+            package='rover_protocol_hub',
+            executable='rover_protocol_hub_node',
+            name='rover_protocol_hub_node',
+            parameters=get_parameters('rover_protocol_hub'),
+            arguments=(
+                '--ros-args',
+                '--log-level', 'DEBUG'
+            )
         )
     ])

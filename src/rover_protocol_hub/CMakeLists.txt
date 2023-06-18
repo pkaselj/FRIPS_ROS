@@ -9,6 +9,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(rover_interface_definition REQUIRED)
+find_package(rover_messages REQUIRED)
 
 add_executable(rover_protocol_hub_node src/rover_protocol_hub_node.cpp)
 target_include_directories(rover_protocol_hub_node PUBLIC
@@ -19,10 +21,20 @@ ament_target_dependencies(
   rover_protocol_hub_node
   "rclcpp"
   "geometry_msgs"
+  "rover_interface_definition"
+  "rover_messages"
 )
 
 install(TARGETS rover_protocol_hub_node
   DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include/
+)
+
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
