@@ -1,17 +1,38 @@
 #include <cstdio>
 #include <functional>
+#include <sstream>
 #include "rclcpp/rclcpp.hpp"
 #include "rover_interface_definition/stxetx_protocol.h"
 #include "rover_messages/msg/odometry.hpp"
 #include "rover_messages/msg/command.hpp"
 #include "rover_messages/msg/stxetx_frame.hpp"
-#include "rover_protocol_hub/little_endian_decoding.h"
+#include "rover_protocol_hub/little_endian_encoding.hpp"
 
 using CommandMsg = rover_messages::msg::Command;
 using FrameMsg = rover_messages::msg::StxetxFrame;
 using OdometryMsg = rover_messages::msg::Odometry;
 
 using std::placeholders::_1;
+
+
+std::string byte_buffer_to_hex_string_(const uint8_t *p_buffer, size_t length)
+{
+  const size_t bytes_in_row = 8;
+
+  std::stringstream ss;
+
+  ss << std::hex << std::setfill('0');
+
+  for (size_t i = 0; i < length; i++)
+  {
+    if (i % bytes_in_row == 0)
+    {
+      ss << std::endl;
+    }
+    ss << "0x" << std::setw(2) << (unsigned)p_buffer[i] << " ";
+  }
+  return ss.str();
+}
 
 class RoverProtocolHub : public rclcpp::Node
 {
@@ -117,7 +138,40 @@ void RoverProtocolHub::on_command_msg_to_rover_(CommandMsg::ConstSharedPtr p_msg
   );
 
   auto frame_msg = FrameMsg();
-  frame_msg.msg_type = MSG_TYPE_GO_FORWARD; // TODO
+
+  if (
+    /* IF ALL MOTORS ARE COMMANDED TO 0 */
+    (p_msg->motor_1_rps == 0
+    && p_msg->motor_2_rps == 0
+    && p_msg->motor_3_rps == 0)
+    ||
+    /* OR COMMAND DURATION IS SET TO 0 */
+    (p_msg->duration_ms == 0)
+  )
+  {
+    // Then, send STOP instead of COMMAND
+    frame_msg.msg_type = MSG_TYPE_STOP;
+  }
+  else
+  {
+    // It is a normal command
+    frame_msg.msg_type = MSG_TYPE_COMMAND;
+    
+    size_t payload_size = 3 * sizeof(float) + sizeof(uint32_t);
+
+    // Fill command payload with zeros (so we can write using iterators)
+    frame_msg.payload = std::vector<uint8_t>(payload_size, 0);
+    frame_msg.length = payload_size;
+    
+    auto it_payload = frame_msg.payload.data();
+
+    // Pack
+    encode_little_endian((void*)(it_payload +  0), (const void*)&(p_msg->motor_1_rps), sizeof(float));
+    encode_little_endian((void*)(it_payload +  4), (const void*)&(p_msg->motor_2_rps), sizeof(float));
+    encode_little_endian((void*)(it_payload +  8), (const void*)&(p_msg->motor_3_rps), sizeof(float));
+    encode_little_endian((void*)(it_payload + 12), (const void*)&(p_msg->duration_ms), sizeof(uint32_t));
+  }
+  
   transmit_msg_to_rover_(frame_msg);
 }
 
@@ -155,11 +209,11 @@ void RoverProtocolHub::on_message_received_from_rover_(FrameMsg::ConstSharedPtr 
 
   switch (p_msg->msg_type)
   {
-  case 255: /* TESTING */
   case MSG_TYPE_ODOMETRY:
     on_odometry_msg_from_rover_(p_msg);
     break;
-  
+
+  case MSG_TYPE_FINISHED:
   default:
     on_unknown_message_received_from_rover_(p_msg);
     break;
@@ -170,7 +224,8 @@ void RoverProtocolHub::on_unknown_message_received_from_rover_(FrameMsg::ConstSh
 {
   RCLCPP_WARN(
     this->get_logger(),
-    "Received unknown message from rover with message type [%d].",
-    p_msg->msg_type
+    "Received unknown message from rover with message type [%d]. Payload:\n%s",
+    p_msg->msg_type,
+    byte_buffer_to_hex_string_(p_msg->payload.data(), p_msg->length).c_str()
   );
 }

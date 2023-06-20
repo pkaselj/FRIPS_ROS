@@ -1,3 +1,3 @@
-float32 speed_rps
+float32 speed_m_s
 float32 relative_direction_rad
 uint32 durations_ms

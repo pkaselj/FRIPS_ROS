@@ -130,7 +130,7 @@ void RoverController::publish_stop_command_()
 
   message.durations_ms = 0;
   message.relative_direction_rad = 0;
-  message.speed_rps = 0;
+  message.speed_m_s = 0;
 
   p_command_publisher_->publish(message);
 }
@@ -147,8 +147,8 @@ void RoverController::publish_heading_command_()
   auto angle_of_attack = atan2(delta_y, delta_x);
 
   message.relative_direction_rad = angle_of_attack;
-  message.speed_rps = max_speed_magnitude_;
-  message.durations_ms = 1000 * (distance / message.speed_rps);
+  message.speed_m_s = max_speed_magnitude_;
+  message.durations_ms = 1000 * (distance / message.speed_m_s);
 
   this->p_command_publisher_->publish(message);
 
@@ -156,10 +156,10 @@ void RoverController::publish_heading_command_()
     this->get_logger(),
     "Setpoint <%03.3lf, %03.3lf> "
     "Target <%03.3lf, %03.3lf> "
-    "Rover speed set to <%03.3lf RPS, %03.3lf rad> for %04d ms",
+    "Rover speed set to <%03.3lf m/s, %03.3lf rad> for %04d ms",
     p_setpoint_position_.position.x, p_setpoint_position_.position.y,
     p_current_position_.position.x, p_current_position_.position.y,
-    message.speed_rps, message.relative_direction_rad, message.durations_ms
+    message.speed_m_s, message.relative_direction_rad, message.durations_ms
   );
 }
 

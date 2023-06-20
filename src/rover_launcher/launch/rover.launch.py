@@ -51,7 +51,17 @@ def generate_launch_description():
             parameters=get_parameters('rover_protocol_hub'),
             arguments=(
                 '--ros-args',
-                '--log-level', 'DEBUG'
+                '--log-level', 'INFO'
             )
-        )
+        ),
+        # Node(
+        #     package='rover_inverse_kinematics',
+        #     executable='rover_inv_kinm_node',
+        #     name='rover_inv_kinm_node',
+        #     parameters=get_parameters('rover_inverse_kinematics'),
+        #     arguments=(
+        #         '--ros-args',
+        #         '--log-level', 'DEBUG'
+        #     )
+        # )
     ])

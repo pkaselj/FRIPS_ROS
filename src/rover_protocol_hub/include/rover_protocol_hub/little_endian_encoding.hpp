@@ -1,8 +1,9 @@
 #ifndef LITTLE_ENDIAN_DECODING_H_
 #define LITTLE_ENDIAN_DECODING_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
+#include <memory>
 
 #ifdef __cplusplus
  extern "C" {
@@ -104,16 +105,17 @@ inline uint64_t get_64_bit_representation_(void* p_serialized_value)
 }
 
 /* ------------------------------------ - ----------------------------------- */
+/* -------------------------------- DECODING -------------------------------- */
 /* ------------------------------------ - ----------------------------------- */
 
 // 16 BIT
 
-inline uint16_t decode_little_endian_uint16(void* p_serialized_value)
+uint16_t decode_little_endian_uint16(void* p_serialized_value)
 {
     return get_16_bit_representation_(p_serialized_value);
 }
 
-inline int16_t decode_little_endian_int16(void* p_serialized_value)
+int16_t decode_little_endian_int16(void* p_serialized_value)
 {
     uint16_t x = get_16_bit_representation_(p_serialized_value);
     return *(int16_t*)(void*)&x;
@@ -121,18 +123,18 @@ inline int16_t decode_little_endian_int16(void* p_serialized_value)
 
 // 32 BIT
 
-inline uint32_t decode_little_endian_uint32(void* p_serialized_value)
+uint32_t decode_little_endian_uint32(void* p_serialized_value)
 {
     return get_32_bit_representation_(p_serialized_value);
 }
 
-inline int32_t decode_little_endian_int32(void* p_serialized_value)
+int32_t decode_little_endian_int32(void* p_serialized_value)
 {
     uint32_t x = get_32_bit_representation_(p_serialized_value);
     return *(int32_t*)(void*)&x;
 }
 
-inline float decode_little_endian_float32(void* p_serialized_value)
+float decode_little_endian_float32(void* p_serialized_value)
 {
     uint32_t x = get_32_bit_representation_(p_serialized_value);
     return *(float*)(void*)&x;
@@ -140,22 +142,37 @@ inline float decode_little_endian_float32(void* p_serialized_value)
 
 // 64 BIT
 
-inline uint64_t decode_little_endian_uint64(void* p_serialized_value)
+uint64_t decode_little_endian_uint64(void* p_serialized_value)
 {
     return get_64_bit_representation_(p_serialized_value);
 }
 
-inline int64_t decode_little_endian_int64(void* p_serialized_value)
+int64_t decode_little_endian_int64(void* p_serialized_value)
 {
     uint64_t x = get_64_bit_representation_(p_serialized_value);
     return *(int64_t*)(void*)&x;
 }
 
-inline double decode_little_endian_float64(void* p_serialized_value)
+double decode_little_endian_float64(void* p_serialized_value)
 {
     uint64_t x = get_64_bit_representation_(p_serialized_value);
     return *(double*)(void*)&x;
 }
+
+/* ------------------------------------ - ----------------------------------- */
+/* -------------------------------- ENCODING -------------------------------- */
+/* ------------------------------------ - ----------------------------------- */
+
+static void encode_little_endian(void* p_destination, const void* p_src, size_t n)
+{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    std::copy_n((uint8_t*)p_src, n, (uint8_t*)p_destination);
+#else
+    std::copy_backward((uint8_t*)p_src, ((uint8_t*)p_src + n), (uint8_t*)p_destination);
+#endif
+}
+
+/* ------------------------------------ - ----------------------------------- */
 
 #ifdef __cplusplus
  }
