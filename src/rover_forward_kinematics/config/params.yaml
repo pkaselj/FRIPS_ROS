@@ -1,0 +1,8 @@
+rover_fwd_kinm_node:
+  ros__parameters:
+    odometry_input_topic: /odometry
+    odometry_input_qos: 10
+    relative_heading_output_topic: /relative_heading_estimate_from_odometry
+    relative_heading_output_qos: 10
+    wheel_to_body_center_distance_m: 0.200
+    wheel_radius_m: 0.075

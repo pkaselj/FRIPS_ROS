@@ -54,14 +54,24 @@ def generate_launch_description():
                 '--log-level', 'INFO'
             )
         ),
-        # Node(
-        #     package='rover_inverse_kinematics',
-        #     executable='rover_inv_kinm_node',
-        #     name='rover_inv_kinm_node',
-        #     parameters=get_parameters('rover_inverse_kinematics'),
-        #     arguments=(
-        #         '--ros-args',
-        #         '--log-level', 'DEBUG'
-        #     )
-        # )
+        Node(
+            package='rover_forward_kinematics',
+            executable='rover_fwd_kinm_node',
+            name='rover_fwd_kinm_node',
+            parameters=get_parameters('rover_forward_kinematics'),
+            arguments=(
+                '--ros-args',
+                '--log-level', 'DEBUG'
+            )
+        ),
+        Node(
+            package='rover_inverse_kinematics',
+            executable='rover_inv_kinm_node',
+            name='rover_inv_kinm_node',
+            parameters=get_parameters('rover_inverse_kinematics'),
+            arguments=(
+                '--ros-args',
+                '--log-level', 'DEBUG'
+            )
+        )
     ])

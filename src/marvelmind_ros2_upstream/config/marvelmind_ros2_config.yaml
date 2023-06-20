@@ -1,6 +1,7 @@
 marvelmind_ros2:
   ros__parameters:
-    hedgehog_pos_topic: "/hedgehog_pos"
+    # hedgehog_pos_topic: "/hedgehog_pos"
+    hedgehog_pos_topic: "/position_measurement" # Rover
     hedgehog_pos_addressed_topic: "/hedgehog_pos_addressed"
     hedgehog_pos_angle_topic: "/hedgehog_pos_ang"
     hedgehog_imu_raw_topic: "/hedgehog_imu_raw"

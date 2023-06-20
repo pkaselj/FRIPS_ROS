@@ -2,7 +2,7 @@ rover_inv_kinm_node:
   ros__parameters:
     wheel_to_body_center_distance_m: 0.200
     wheel_radius_m: 0.075
-    heading_input_topic: /heading_input_topic
+    heading_input_topic: /relative_heading_setpoint
     heading_input_qos: 10
-    command_output_topic: /command_output_topic
+    command_output_topic: /command
     command_output_qos: 10

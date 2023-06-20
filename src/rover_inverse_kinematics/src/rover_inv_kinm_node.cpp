@@ -45,8 +45,8 @@ RoverInverseKinematicsNode::RoverInverseKinematicsNode()
 : rclcpp::Node("rover_inv_kinm_node")
 {
 
-  this->declare_parameter("wheel_to_body_center_distance_m", 0);
-  this->declare_parameter("wheel_radius_m", 0);
+  this->declare_parameter("wheel_to_body_center_distance_m", 0.0f);
+  this->declare_parameter("wheel_radius_m", 0.0f);
   this->declare_parameter("heading_input_topic", "/heading_input_topic");
   this->declare_parameter("heading_input_qos", 10);
   this->declare_parameter("command_output_topic", "/command_output_topic");
@@ -55,12 +55,8 @@ RoverInverseKinematicsNode::RoverInverseKinematicsNode()
 
   RCLCPP_DEBUG(this->get_logger(), "TEST");
 
-  // ! TODO:
-  // Lw_m_ = (float)this->get_parameter("wheel_to_body_center_distance_m").as_double();
-  // Rw_m_ = (float)this->get_parameter("wheel_radius_m").as_double();
-
-  Lw_m_ = 0.200;
-  Rw_m_ = 0.075;  
+  Lw_m_ = this->get_parameter("wheel_to_body_center_distance_m").as_double();
+  Rw_m_ = this->get_parameter("wheel_radius_m").as_double(); 
 
   RCLCPP_INFO(
     this->get_logger(),
