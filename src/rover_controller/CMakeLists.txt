@@ -10,6 +10,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rover_messages REQUIRED)
+find_package(marvelmind_ros2_msgs REQUIRED)
+
 
 add_executable(rover_controller_node src/rover_controller_node.cpp)
 target_include_directories(rover_controller_node PUBLIC
@@ -21,6 +23,7 @@ ament_target_dependencies(
   "rclcpp"
   "geometry_msgs"
   "rover_messages"
+  "marvelmind_ros2_msgs"
 )
 
 install(TARGETS rover_controller_node

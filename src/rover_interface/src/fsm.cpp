@@ -135,7 +135,7 @@ void FiniteStateMachine::Reset_()
 
     if (on_reset_)
     {
-        on_reset_;
+        on_reset_(0x00);
     }
     
 }

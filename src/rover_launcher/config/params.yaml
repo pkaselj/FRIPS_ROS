@@ -1,7 +1,7 @@
 marvelmind_ros2_left_beacon:
   ros__parameters:
-    # hedgehog_pos_topic: "/position_measurement" # Rover
-    hedgehog_pos_angle_topic: "/position_measurement_left" # Paired beacons
+    hedgehog_pos_topic: "/unused/hedgehog_pos_topic" # Rover
+    hedgehog_pos_angle_topic: "/position_measurement/left" # Paired beacons
     marvelmind_publish_rate_in_hz: 200
     marvelmind_tty_baudrate: 9600 # likely does not every need to change
     # marvelmind_tty_filename: "/dev/ttyACM0"
@@ -9,8 +9,8 @@ marvelmind_ros2_left_beacon:
 
 marvelmind_ros2_right_beacon:
   ros__parameters:
-    # hedgehog_pos_topic: "/position_measurement" # Rover
-    hedgehog_pos_angle_topic: "/position_measurement_right" # Paired beacons
+    hedgehog_pos_topic: "/unused/hedgehog_pos_topic" # Rover
+    hedgehog_pos_angle_topic: "/position_measurement/right" # Paired beacons
     marvelmind_publish_rate_in_hz: 200
     marvelmind_tty_baudrate: 9600 # likely does not every need to change
     marvelmind_tty_filename: "/dev/ttyACM1"
@@ -68,3 +68,13 @@ rover_protocol_hub_node:
     odometry_publisher_qos: 10
     command_listener_topic: /command
     command_listener_qos: 10
+
+marvelmind_position_fusion_node:
+  ros__parameters:
+    position_measurement_left_topic: /position_measurement/left
+    position_measurement_left_qos: 10
+    position_measurement_right_topic: /position_measurement/right
+    position_measurement_right_qos: 10
+    fused_position_topic: /position_measurement
+    fused_position_qos: 10
+    fused_position_broadcast_rate_hz: 1.0

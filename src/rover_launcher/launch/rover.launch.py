@@ -41,7 +41,7 @@ def generate_launch_description():
             parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
-                '--log-level', 'INFO'
+                '--log-level', 'DEBUG'
             )
         ),
         Node(
@@ -93,5 +93,16 @@ def generate_launch_description():
                 '--ros-args',
                 '--log-level', 'INFO'
             )
+        ),
+        Node(
+            package='marvelmind_position_fusion',
+            executable='marvelmind_position_fusion_node',
+            name='marvelmind_position_fusion_node',
+            parameters=get_parameters('rover_launcher'),
+            arguments=(
+                '--ros-args',
+                '--log-level', 'INFO'
+            )
         )
     ])
+

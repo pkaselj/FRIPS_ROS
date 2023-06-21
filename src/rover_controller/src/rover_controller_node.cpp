@@ -1,8 +1,7 @@
 #include <cstdio>
 #include "rclcpp/rclcpp.hpp"
 #include "rover_messages/msg/rover_heading.hpp"
-#include "geometry_msgs/msg/twist.hpp"
-#include "geometry_msgs/msg/pose.hpp"
+#include "marvelmind_ros2_msgs/msg/hedge_position_angle.hpp"
 #include <chrono>
 #include <memory>
 #include <functional>
@@ -10,7 +9,7 @@
 #define EPSILON 0.05f
 
 using CommandMsg = rover_messages::msg::RoverHeading;
-using PositionMsg = geometry_msgs::msg::Pose;
+using PositionMsg = marvelmind_ros2_msgs::msg::HedgePositionAngle;
 
 using std::placeholders::_1;
 
@@ -25,8 +24,8 @@ class RoverController : public rclcpp::Node
   rclcpp::Subscription<PositionMsg>::SharedPtr p_position_subscriber_;
   rclcpp::Subscription<PositionMsg>::SharedPtr p_setpoint_subscriber_;
 
-  PositionMsg p_current_position_;
-  PositionMsg p_setpoint_position_;
+  PositionMsg current_position_;
+  PositionMsg setpoint_position_;
 
   double max_speed_magnitude_;
 
@@ -77,9 +76,10 @@ RoverController::RoverController()
   auto setpoint_callback = std::bind(&RoverController::setpoint_receive_callback_, this, _1);
   p_setpoint_subscriber_ = this->create_subscription<PositionMsg>(setpoint_topic, 10, setpoint_callback);
 
-  p_setpoint_position_ = PositionMsg();
-  p_setpoint_position_.position.x = 5;
-  p_setpoint_position_.position.y = 5;
+  setpoint_position_ = PositionMsg();
+  setpoint_position_.x_m = 0;
+  setpoint_position_.y_m = 0;
+  setpoint_position_.angle = 0;
 
   RCLCPP_INFO(this->get_logger(), "END Ctor()");
 }
@@ -93,10 +93,10 @@ void RoverController::timer_callback_()
 {
   if (
     is_target_at_destination_(
-      p_current_position_.position.x,  /* TARGET.X */
-      p_current_position_.position.y,  /* TARGET.Y */
-      p_setpoint_position_.position.x,   /* DESTINATION.X */
-      p_setpoint_position_.position.y    /* DESTINATION.Y */
+      current_position_.x_m,  /* TARGET.X */
+      current_position_.y_m,  /* TARGET.Y */
+      setpoint_position_.x_m,   /* DESTINATION.X */
+      setpoint_position_.y_m    /* DESTINATION.Y */
       )
   )
   {
@@ -112,16 +112,19 @@ void RoverController::position_receive_callback_(PositionMsg::ConstSharedPtr new
 {
   RCLCPP_DEBUG(this->get_logger(), "Received position update.");
 
-  p_current_position_.position.x = new_position->position.x;
-  p_current_position_.position.y = new_position->position.y;
+  current_position_.x_m = new_position->x_m;
+  current_position_.y_m = new_position->y_m;
+  current_position_.angle = new_position->angle;
 }
 
 void RoverController::setpoint_receive_callback_(PositionMsg::ConstSharedPtr new_setpoint)
 {
   RCLCPP_DEBUG(this->get_logger(), "Received setpoint update.");
 
-  p_setpoint_position_.position.x = new_setpoint->position.x;
-  p_setpoint_position_.position.y = new_setpoint->position.y;
+  setpoint_position_.x_m = new_setpoint->x_m;
+  setpoint_position_.y_m = new_setpoint->y_m;
+  // TODO: Should be ignored?
+  setpoint_position_.angle = new_setpoint->angle;
 }
 
 void RoverController::publish_stop_command_()
@@ -139,11 +142,12 @@ void RoverController::publish_heading_command_()
 {
   auto message = CommandMsg();
 
-  auto delta_x = p_setpoint_position_.position.x - p_current_position_.position.x;
-  auto delta_y = p_setpoint_position_.position.y - p_current_position_.position.y;
+  auto delta_x = setpoint_position_.x_m - current_position_.x_m;
+  auto delta_y = setpoint_position_.y_m - current_position_.y_m;
 
   auto distance = sqrt(delta_x * delta_x + delta_y * delta_y);
 
+  // IMPORTANT TODO: Incorporate angle into this
   auto angle_of_attack = atan2(delta_y, delta_x);
 
   message.relative_direction_rad = angle_of_attack;
@@ -154,11 +158,11 @@ void RoverController::publish_heading_command_()
 
   RCLCPP_DEBUG(
     this->get_logger(),
-    "Setpoint <%03.3lf, %03.3lf> "
-    "Target <%03.3lf, %03.3lf> "
-    "Rover speed set to <%03.3lf m/s, %03.3lf rad> for %04d ms",
-    p_setpoint_position_.position.x, p_setpoint_position_.position.y,
-    p_current_position_.position.x, p_current_position_.position.y,
+    "Setpoint <%03.3f, %03.3f> "
+    "Target <%03.3f, %03.3f, %03.3f> "
+    "Rover speed set to <%03.3f m/s, %03.3f rad> for %04d ms",
+    setpoint_position_.x_m, setpoint_position_.y_m,
+    current_position_.x_m, current_position_.y_m, current_position_.angle,
     message.speed_m_s, message.relative_direction_rad, message.durations_ms
   );
 }
