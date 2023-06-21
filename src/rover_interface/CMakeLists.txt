@@ -18,6 +18,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rover_messages REQUIRED)
+find_package(rover_interface_definition REQUIRED)
 #find_package(asio REQUIRED)
 
 add_library(stxetx_parse_fsm include/${PROJECT_NAME}/fsm.hpp src/fsm.cpp)
@@ -28,12 +29,6 @@ target_include_directories(stxetx_parse_fsm PUBLIC
 ament_target_dependencies(
   stxetx_parse_fsm
   "rclcpp"
-)
-
-add_library(stxetx_protocol include/${PROJECT_NAME}/stxetx_protocol.h src/stxetx_protocol.c)
-target_include_directories(stxetx_protocol PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
 )
 
 add_executable(rover_interface_node src/rover_interface_node.cpp)
@@ -47,12 +42,13 @@ target_include_directories(rover_interface_node PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 target_compile_features(rover_interface_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-target_link_libraries(rover_interface_node stxetx_parse_fsm stxetx_protocol)
+target_link_libraries(rover_interface_node stxetx_parse_fsm)
 ament_target_dependencies(
   rover_interface_node
   "rclcpp"
   "std_msgs"
   "rover_messages"
+  "rover_interface_definition"
 )
 
 install(TARGETS rover_interface_node

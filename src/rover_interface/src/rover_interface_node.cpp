@@ -12,7 +12,7 @@
 #include "rover_messages/msg/byte_buffer.hpp"
 #include "rover_messages/msg/stxetx_frame.hpp"
 #include "rover_interface/fsm.hpp"
-#include "rover_interface/stxetx_protocol.h"
+#include "rover_interface_definition/stxetx_protocol.h"
 
 using std::placeholders::_1;
 using std::placeholders::_2;
