@@ -5,7 +5,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-add_compile_definitions(-DASIO_STANDALONE)
+# add_compile_definitions(-DASIO_STANDALONE)
+add_compile_definitions(ASIO_STANDALONE)
 
 if(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
   set (CMAKE_CXX_FLAGS "-g -ggdb")

@@ -20,7 +20,7 @@ using std::placeholders::_2;
 #define RECEIVE_BUFFER_SIZE 1024
 #define FRAME_BUFFER_SIZE 1024
 #define TRANSMIT_BUFFER_SIZE 1024
-#define PAYLOAD_BUFFER_SIZE 1024
+#define PAYLOAD_BUFFER_SIZE 255 // Max. size because stxetx protocol allows only sizes that fit into 8-bit field
 
 static volatile bool g_io_context_ready = false;
 
@@ -94,10 +94,10 @@ int main(int argc, char ** argv)
 RoverInterfaceNode::RoverInterfaceNode(std::shared_ptr<asio::io_context> p_io)
 : rclcpp::Node("rover_interface_node"),
   p_io_(p_io),
+  serial_port_(*p_io),
   fsm_(FiniteStateMachine::STATE_IDLE, nullptr, *this),
   frames_byte_count_(0),
-  frames_payload_byte_count_(0),
-  serial_port_(*p_io)
+  frames_payload_byte_count_(0)
 {
   this->declare_parameter("port_name", "COM3");
   this->declare_parameter("baud_rate", 9600);
@@ -136,7 +136,7 @@ RoverInterfaceNode::RoverInterfaceNode(std::shared_ptr<asio::io_context> p_io)
     RCLCPP_FATAL(
       this->get_logger(),
       "Could not open '%s' with Baud Rate '%d'",
-      port_name,
+      port_name.c_str(),
       baud_rate
     );
     exit(-1);
@@ -155,7 +155,7 @@ RoverInterfaceNode::RoverInterfaceNode(std::shared_ptr<asio::io_context> p_io)
   RCLCPP_INFO(
     this->get_logger(),
     "Port '%s' opened with Baud Rate '%d'",
-    port_name,
+    port_name.c_str(),
     baud_rate
   );
 
@@ -186,7 +186,7 @@ void RoverInterfaceNode::on_data_received_(const asio::error_code &ec, size_t by
   {
     RCLCPP_DEBUG(
       this->get_logger(),
-      "Received %d bytes.\n%s",
+      "Received %ld bytes.\n%s",
       bytes_transferred,
       byte_buffer_to_hex_string_(p_receive_buffer_, bytes_transferred).c_str()
     );
@@ -228,7 +228,7 @@ void RoverInterfaceNode::on_data_transmit_completed_(const asio::error_code &ec,
     return;
   }
 
-  RCLCPP_DEBUG(this->get_logger(), "Successfully written %d bytes.", bytes_transferred);
+  RCLCPP_DEBUG(this->get_logger(), "Successfully written %lu bytes.", bytes_transferred);
 }
 
 void RoverInterfaceNode::process_received_bytes_(size_t bytes_to_process)
@@ -299,22 +299,22 @@ void RoverInterfaceNode::initialize_fsm_()
     this->write_byte_to_processed_buffer_(x);
   };
 
-  auto callback_byte_escaped = [this](uint8_t x /* ASCII_ESCAPE */){
-    RCLCPP_DEBUG(this->get_logger(), "callback_byte_escaped '0x%02X'", x);
-    // This is not STXETX decoding, write all escape charactets,
-    // STXETX decoding library will take care of other
-    this->write_byte_to_processed_buffer_(x);
-  };
+  // auto callback_byte_escaped = [this](uint8_t x /* ASCII_ESCAPE */){
+  //   RCLCPP_DEBUG(this->get_logger(), "callback_byte_escaped '0x%02X'", x);
+  //   // This is not STXETX decoding, write all escape charactets,
+  //   // STXETX decoding library will take care of other
+  //   this->write_byte_to_processed_buffer_(x);
+  // };
 
   auto callback_write_data_byte = [this](uint8_t x){
       RCLCPP_DEBUG(this->get_logger(), "callback_write_data_byte '0x%02X'", x);
       this->write_byte_to_processed_buffer_(x);
   };
 
-  auto callback_do_void = [this](uint8_t){
-    RCLCPP_DEBUG(this->get_logger(), "callback_do_void");
-    ; // DO NOTHING
-  };
+  // auto callback_do_void = [this](uint8_t){
+  //   RCLCPP_DEBUG(this->get_logger(), "callback_do_void");
+  //   ; // DO NOTHING
+  // };
 
   using State = FiniteStateMachine::FSM_State;
   using Event = FiniteStateMachine::FSM_Event;
@@ -352,7 +352,7 @@ void RoverInterfaceNode::write_byte_to_processed_buffer_(uint8_t x)
   {
     RCLCPP_FATAL(
       this->get_logger(),
-      "Cannot process anymore bytes. Processed %ld out of max %ld",
+      "Cannot process anymore bytes. Processed %lu out of max %d",
       frames_byte_count_,
       FRAME_BUFFER_SIZE
     );

@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <functional>
 #include <memory>
-#include "rclcpp\rclcpp.hpp"
-#include "rover_messages\msg\odometry.hpp"
-#include "rover_messages\msg\rover_heading.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rover_messages/msg/odometry.hpp"
+#include "rover_messages/msg/rover_heading.hpp"
 
 using std::placeholders::_1;
 

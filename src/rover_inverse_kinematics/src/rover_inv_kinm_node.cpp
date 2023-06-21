@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <functional>
 #include <cmath>
-#include "rclcpp\rclcpp.hpp"
-#include "rover_messages\msg\rover_heading.hpp"
-#include "rover_messages\msg\command.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rover_messages/msg/rover_heading.hpp"
+#include "rover_messages/msg/command.hpp"
 
 #ifndef M_PI
   #define M_PI 3.141f
