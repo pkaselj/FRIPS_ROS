@@ -184,6 +184,7 @@ void RoverProtocolHub::on_odometry_msg_from_rover_(FrameMsg::ConstSharedPtr p_ms
   odometry_msg.motor_1_rps = decode_little_endian_float32((void*)(it_payload + 0));
   odometry_msg.motor_2_rps = decode_little_endian_float32((void*)(it_payload + 4));
   odometry_msg.motor_3_rps = decode_little_endian_float32((void*)(it_payload + 8));
+  odometry_msg.time_delta_ms = decode_little_endian_uint32((void*)(it_payload + 12));
 
   p_odometry_from_rover_publisher_->publish(odometry_msg);
 }

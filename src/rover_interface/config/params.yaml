@@ -1,7 +1,7 @@
 rover_interface_node:
   ros__parameters:
-    port_name: COM3
-    # port_name: COM20
+    # port_name: COM3
+    port_name: COM20
     baud_rate: 9600
     received_msg_broadcast: /rover_receiver
     transmit_request: /rover_transmitter

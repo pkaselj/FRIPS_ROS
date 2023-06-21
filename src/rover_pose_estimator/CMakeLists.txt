@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(turtlesim REQUIRED)
 find_package(rover_messages REQUIRED)
+find_package(marvelmind_ros2_msgs REQUIRED)
 
 add_executable(rover_pose_estimator_node src/rover_pose_estimator_node.cpp)
 target_include_directories(rover_pose_estimator_node PUBLIC
@@ -23,6 +24,7 @@ ament_target_dependencies(
   "geometry_msgs"
   "turtlesim"
   "rover_messages"
+  "marvelmind_ros2_msgs"
 )
 
 install(TARGETS rover_pose_estimator_node

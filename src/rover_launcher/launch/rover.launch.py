@@ -61,7 +61,7 @@ def generate_launch_description():
             parameters=get_parameters('rover_forward_kinematics'),
             arguments=(
                 '--ros-args',
-                '--log-level', 'DEBUG'
+                '--log-level', 'INFO'
             )
         ),
         Node(
@@ -71,7 +71,7 @@ def generate_launch_description():
             parameters=get_parameters('rover_inverse_kinematics'),
             arguments=(
                 '--ros-args',
-                '--log-level', 'DEBUG'
+                '--log-level', 'INFO'
             )
         )
     ])

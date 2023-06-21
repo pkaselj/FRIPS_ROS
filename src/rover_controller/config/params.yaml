@@ -4,4 +4,4 @@ rover_controller_node:
     position_topic: /position_estimate
     setpoint_topic: /position_setpoint
     publish_rate_ms: 100
-    max_speed_magnitude: 0.5
+    max_speed_magnitude: 0.1
