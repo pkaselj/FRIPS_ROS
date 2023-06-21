@@ -18,7 +18,7 @@ def generate_launch_description():
             package='rover_controller',
             executable='rover_controller_node',
             name='rover_controller_node',
-            parameters=get_parameters('rover_controller'),
+            parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
                 '--log-level', 'INFO'
@@ -28,7 +28,7 @@ def generate_launch_description():
             package='rover_interface',
             executable='rover_interface_node',
             name='rover_interface_node',
-            parameters=get_parameters('rover_interface'),
+            parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
                 '--log-level', 'INFO'
@@ -38,7 +38,7 @@ def generate_launch_description():
             package='rover_pose_estimator',
             executable='rover_pose_estimator_node',
             name='rover_pose_estimator_node',
-            parameters=get_parameters('rover_pose_estimator'),
+            parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
                 '--log-level', 'INFO'
@@ -48,7 +48,7 @@ def generate_launch_description():
             package='rover_protocol_hub',
             executable='rover_protocol_hub_node',
             name='rover_protocol_hub_node',
-            parameters=get_parameters('rover_protocol_hub'),
+            parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
                 '--log-level', 'INFO'
@@ -58,7 +58,7 @@ def generate_launch_description():
             package='rover_forward_kinematics',
             executable='rover_fwd_kinm_node',
             name='rover_fwd_kinm_node',
-            parameters=get_parameters('rover_forward_kinematics'),
+            parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
                 '--log-level', 'INFO'
@@ -68,7 +68,7 @@ def generate_launch_description():
             package='rover_inverse_kinematics',
             executable='rover_inv_kinm_node',
             name='rover_inv_kinm_node',
-            parameters=get_parameters('rover_inverse_kinematics'),
+            parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
                 '--log-level', 'INFO'
@@ -77,8 +77,18 @@ def generate_launch_description():
         Node(
             package='marvelmind_ros2',
             executable='marvelmind_ros2',
-            name='marvelmind_ros2',
-            parameters=get_parameters('marvelmind_ros2', 'marvelmind_ros2_config.yaml'),
+            name='marvelmind_ros2_left_beacon',
+            parameters=get_parameters('rover_launcher'),
+            arguments=(
+                '--ros-args',
+                '--log-level', 'INFO'
+            )
+        ),
+        Node(
+            package='marvelmind_ros2',
+            executable='marvelmind_ros2',
+            name='marvelmind_ros2_right_beacon',
+            parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
                 '--log-level', 'INFO'

@@ -58,12 +58,13 @@ ament_target_dependencies(
 install(TARGETS rover_interface_node
   DESTINATION lib/${PROJECT_NAME})
 
-install(
-    DIRECTORY
-    config
-    DESTINATION
-    share/${PROJECT_NAME}
-  )
+# DEPRECATED, all configuration is managed by rover_launcher package
+# install(
+#     DIRECTORY
+#     config
+#     DESTINATION
+#     share/${PROJECT_NAME}
+#   )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

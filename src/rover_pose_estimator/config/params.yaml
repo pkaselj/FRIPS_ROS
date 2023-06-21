@@ -1,6 +1,0 @@
-rover_pose_estimator_node:
-  ros__parameters:
-    position_input_topic: /position_measurement
-    position_output_topic: /position_estimate
-    relative_heading_input_topic: /relative_heading_estimate_from_odometry
-    broadcast_rate_ms:  200

@@ -1,0 +1,70 @@
+marvelmind_ros2_left_beacon:
+  ros__parameters:
+    # hedgehog_pos_topic: "/position_measurement" # Rover
+    hedgehog_pos_angle_topic: "/position_measurement_left" # Paired beacons
+    marvelmind_publish_rate_in_hz: 200
+    marvelmind_tty_baudrate: 9600 # likely does not every need to change
+    # marvelmind_tty_filename: "/dev/ttyACM0"
+    marvelmind_tty_filename: "/dev/ttyACM3"
+
+marvelmind_ros2_right_beacon:
+  ros__parameters:
+    # hedgehog_pos_topic: "/position_measurement" # Rover
+    hedgehog_pos_angle_topic: "/position_measurement_right" # Paired beacons
+    marvelmind_publish_rate_in_hz: 200
+    marvelmind_tty_baudrate: 9600 # likely does not every need to change
+    marvelmind_tty_filename: "/dev/ttyACM1"
+
+rover_controller_node:
+  ros__parameters:
+    command_topic: /relative_heading_setpoint
+    position_topic: /position_estimate
+    setpoint_topic: /position_setpoint
+    publish_rate_ms: 1000
+    max_speed_magnitude: 0.1
+
+rover_fwd_kinm_node:
+  ros__parameters:
+    odometry_input_topic: /odometry
+    odometry_input_qos: 10
+    relative_heading_output_topic: /relative_heading_estimate_from_odometry
+    relative_heading_output_qos: 10
+    wheel_to_body_center_distance_m: 0.200
+    wheel_radius_m: 0.075
+
+rover_interface_node:
+  ros__parameters:
+    # port_name: /dev/ttyUSB0
+    port_name: /dev/ttyACM0
+    baud_rate: 9600
+    received_msg_broadcast: /rover_receiver
+    transmit_request: /rover_transmitter
+    received_msg_broadcast_qos: 10
+    transmit_request_qos: 10
+
+rover_inv_kinm_node:
+  ros__parameters:
+    wheel_to_body_center_distance_m: 0.200
+    wheel_radius_m: 0.075
+    heading_input_topic: /relative_heading_setpoint
+    heading_input_qos: 10
+    command_output_topic: /command
+    command_output_qos: 10
+
+rover_pose_estimator_node:
+  ros__parameters:
+    position_input_topic: /position_measurement
+    position_output_topic: /position_estimate
+    relative_heading_input_topic: /relative_heading_estimate_from_odometry
+    broadcast_rate_ms:  200
+
+rover_protocol_hub_node:
+  ros__parameters:
+    rover_msg_subscriber_topic: /rover_receiver
+    rover_msg_subscriber_qos: 10
+    rover_msg_publisher_topic: /rover_transmitter
+    rover_msg_publisher_qos: 10
+    odometry_publisher_topic: /odometry
+    odometry_publisher_qos: 10
+    command_listener_topic: /command
+    command_listener_qos: 10

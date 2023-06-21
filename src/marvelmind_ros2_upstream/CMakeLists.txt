@@ -64,10 +64,11 @@ install(
 )
 
 # make sure we grab config folder
-install(DIRECTORY
-  config
-  DESTINATION share/${PROJECT_NAME}
-)
+# ALL CONFIG IS MANAGED BY rover_launcher package
+# install(DIRECTORY
+#   config
+#   DESTINATION share/${PROJECT_NAME}
+# )
 
 install(DIRECTORY
   launch
