@@ -7,7 +7,7 @@
 #include <memory>
 #include <functional>
 
-#define EPSILON 0.001f
+#define EPSILON 0.05f
 
 using CommandMsg = rover_messages::msg::RoverHeading;
 using PositionMsg = geometry_msgs::msg::Pose;

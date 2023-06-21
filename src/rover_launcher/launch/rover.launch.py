@@ -73,5 +73,15 @@ def generate_launch_description():
                 '--ros-args',
                 '--log-level', 'INFO'
             )
+        ),
+        Node(
+            package='marvelmind_ros2',
+            executable='marvelmind_ros2',
+            name='marvelmind_ros2',
+            parameters=get_parameters('marvelmind_ros2', 'marvelmind_ros2_config.yaml'),
+            arguments=(
+                '--ros-args',
+                '--log-level', 'INFO'
+            )
         )
     ])

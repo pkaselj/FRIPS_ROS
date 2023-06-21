@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstddef>
 #include <memory>
+#include <algorithm>
+#include <cstring>
 
 #ifdef __cplusplus
  extern "C" {
@@ -163,11 +165,14 @@ double decode_little_endian_float64(void* p_serialized_value)
 /* -------------------------------- ENCODING -------------------------------- */
 /* ------------------------------------ - ----------------------------------- */
 
-static void encode_little_endian(void* p_destination, const void* p_src, size_t n)
+static void encode_little_endian(uint8_t* p_destination, const uint8_t* p_src, size_t n)
 {
+// ! UBUNTU IS LITTLE ENDIAN BUT FLOATS ARE STORED AS BIG ENDIAN WTF!!!???
+// ! IMPORTANT TODO:
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    std::copy_n((uint8_t*)p_src, n, (uint8_t*)p_destination);
+    memcpy(p_destination, p_src, n);
 #else
+    #error "Wrong endianness"
     std::copy_backward((uint8_t*)p_src, ((uint8_t*)p_src + n), (uint8_t*)p_destination);
 #endif
 }

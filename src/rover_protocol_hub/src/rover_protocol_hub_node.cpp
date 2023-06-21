@@ -166,10 +166,18 @@ void RoverProtocolHub::on_command_msg_to_rover_(CommandMsg::ConstSharedPtr p_msg
     auto it_payload = frame_msg.payload.data();
 
     // Pack
-    encode_little_endian((void*)(it_payload +  0), (const void*)&(p_msg->motor_1_rps), sizeof(float));
-    encode_little_endian((void*)(it_payload +  4), (const void*)&(p_msg->motor_2_rps), sizeof(float));
-    encode_little_endian((void*)(it_payload +  8), (const void*)&(p_msg->motor_3_rps), sizeof(float));
-    encode_little_endian((void*)(it_payload + 12), (const void*)&(p_msg->duration_ms), sizeof(uint32_t));
+    encode_little_endian((it_payload +  0), (const uint8_t*)&(p_msg->motor_1_rps), sizeof(float));
+    encode_little_endian((it_payload +  4), (const uint8_t*)&(p_msg->motor_2_rps), sizeof(float));
+    encode_little_endian((it_payload +  8), (const uint8_t*)&(p_msg->motor_3_rps), sizeof(float));
+    encode_little_endian((it_payload + 12), (const uint8_t*)&(p_msg->duration_ms), sizeof(uint32_t));
+
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "Encoded %03.3f (%s) as %s",
+       p_msg->motor_1_rps,
+       byte_buffer_to_hex_string_((uint8_t*)&(p_msg->motor_1_rps), 4).c_str(),
+       byte_buffer_to_hex_string_((uint8_t*)(it_payload +  0), 4).c_str()
+    );
   }
   
   transmit_msg_to_rover_(frame_msg);

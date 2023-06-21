@@ -89,6 +89,20 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "coroutine": "cpp",
-        "resumable": "cpp"
-    }
+        "resumable": "cpp",
+        "cwctype": "cpp",
+        "any": "cpp",
+        "*.tcc": "cpp",
+        "complex": "cpp",
+        "deque": "cpp",
+        "memory_resource": "cpp",
+        "random": "cpp",
+        "source_location": "cpp",
+        "string_view": "cpp",
+        "fstream": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "cinttypes": "cpp"
+    },
+    "ros.distro": "humble"
 }
