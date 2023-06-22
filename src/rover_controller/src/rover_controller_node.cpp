@@ -24,7 +24,9 @@ class RoverController : public rclcpp::Node
   rclcpp::Subscription<PositionMsg>::SharedPtr p_position_subscriber_;
   rclcpp::Subscription<PositionMsg>::SharedPtr p_setpoint_subscriber_;
 
+  // Relative to Rover WCS (RWCS)
   PositionMsg current_position_;
+  // Relative to Rover WCS (RWCS)
   PositionMsg setpoint_position_;
 
   double max_speed_magnitude_;
@@ -32,6 +34,7 @@ class RoverController : public rclcpp::Node
   void timer_callback_();
   void position_receive_callback_(PositionMsg::ConstSharedPtr);
   void setpoint_receive_callback_(PositionMsg::ConstSharedPtr);
+  
   void publish_stop_command_();
   void publish_heading_command_();
 };
@@ -39,8 +42,6 @@ class RoverController : public rclcpp::Node
 RoverController::RoverController()
   : Node("rover_controller")
 {
-  RCLCPP_INFO(this->get_logger(), "START Ctor()");
-
   this->declare_parameter("command_topic", "rover_commands");
   this->declare_parameter("position_topic", "position_topic");
   this->declare_parameter("setpoint_topic", "setpoint_topic");
@@ -80,8 +81,6 @@ RoverController::RoverController()
   setpoint_position_.x_m = 0;
   setpoint_position_.y_m = 0;
   setpoint_position_.angle = 0;
-
-  RCLCPP_INFO(this->get_logger(), "END Ctor()");
 }
 
 static bool is_target_at_destination_(double target_x, double target_y, double dest_x, double dest_y)
@@ -142,17 +141,24 @@ void RoverController::publish_heading_command_()
 {
   auto message = CommandMsg();
 
-  auto delta_x = setpoint_position_.x_m - current_position_.x_m;
-  auto delta_y = setpoint_position_.y_m - current_position_.y_m;
+  // Calculate difference vector in RWCS system
+  auto delta_x_m_rwcs = setpoint_position_.x_m - current_position_.x_m;
+  auto delta_y_m_rwcs = setpoint_position_.y_m - current_position_.y_m;
 
-  auto distance = sqrt(delta_x * delta_x + delta_y * delta_y);
+  auto distance_m = sqrt(delta_x_m_rwcs * delta_x_m_rwcs + delta_y_m_rwcs * delta_y_m_rwcs);
+  auto delta_angle_deg_rwcs = (360.0f / 6.28f) * atan2(delta_y_m_rwcs, delta_x_m_rwcs);
 
-  // IMPORTANT TODO: Incorporate angle into this
-  auto angle_of_attack = atan2(delta_y, delta_x);
+  // Angle of attack is defined as difference of 
+  // setpoint's angle in RWCS system and rover's
+  // orientation in RWCS system
+  auto rover_heading_deg = current_position_.angle;
+  auto angle_of_attack_deg = delta_angle_deg_rwcs - rover_heading_deg;
 
-  message.relative_direction_rad = angle_of_attack;
+  // Rover heading
+  auto relative_direction_deg = angle_of_attack_deg;
+  message.relative_direction_rad = (6.28f / 360.0f) * angle_of_attack_deg;
   message.speed_m_s = max_speed_magnitude_;
-  message.durations_ms = 1000 * (distance / message.speed_m_s);
+  message.durations_ms = 1000 * (distance_m / message.speed_m_s);
 
   this->p_command_publisher_->publish(message);
 
@@ -160,10 +166,10 @@ void RoverController::publish_heading_command_()
     this->get_logger(),
     "Setpoint <%03.3f, %03.3f> "
     "Target <%03.3f, %03.3f, %03.3f> "
-    "Rover speed set to <%03.3f m/s, %03.3f rad> for %04d ms",
+    "Rover speed set to <%03.3f m/s, %03.3f DEG> for %04d ms",
     setpoint_position_.x_m, setpoint_position_.y_m,
     current_position_.x_m, current_position_.y_m, current_position_.angle,
-    message.speed_m_s, message.relative_direction_rad, message.durations_ms
+    message.speed_m_s, relative_direction_deg, message.durations_ms
   );
 }
 
