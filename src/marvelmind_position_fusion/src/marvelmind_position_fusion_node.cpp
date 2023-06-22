@@ -19,9 +19,12 @@ private:
   rclcpp::TimerBase::SharedPtr p_fused_position_broadcast_timer_;
 
   PositionMsg fused_position_;
+  float fusion_alpha_;
 
   void on_left_position_receive_(PositionMsg::ConstSharedPtr p_msg);
   void on_right_position_receive_(PositionMsg::ConstSharedPtr p_msg);
+
+  void feed_new_position_measurement_to_filter_(PositionMsg::ConstSharedPtr p_msg);
 
   void on_position_broadcast_timer_trigger_();
 };
@@ -35,8 +38,7 @@ int main(int argc, char ** argv)
 }
 
 MarvelmindPositionFusionNode::MarvelmindPositionFusionNode()
-: rclcpp::Node("marvelmind_position_fusion_node"),
-  fused_position_()
+: rclcpp::Node("marvelmind_position_fusion_node")
 {
   this->declare_parameter("position_measurement_left_topic", "/position_measurement_left");
   this->declare_parameter("position_measurement_left_qos", 10);
@@ -45,6 +47,11 @@ MarvelmindPositionFusionNode::MarvelmindPositionFusionNode()
   this->declare_parameter("fused_position_topic", "/fused_position");
   this->declare_parameter("fused_position_qos", 10);
   this->declare_parameter("fused_position_broadcast_rate_hz", 1.0f);
+
+  // TODO check if under 1.0f
+  this->declare_parameter("fusion_exponential_averaging_alpha", 0.8f);
+
+  fusion_alpha_ = this->get_parameter("fusion_exponential_averaging_alpha").as_double();
 
   auto position_measurement_left_topic = this->get_parameter("position_measurement_left_topic").as_string();
   auto position_measurement_left_qos = this->get_parameter("position_measurement_left_qos").as_int();
@@ -100,6 +107,11 @@ MarvelmindPositionFusionNode::MarvelmindPositionFusionNode()
     fused_position_qos
   );
 
+  fused_position_ = PositionMsg();
+  fused_position_.x_m = 0;
+  fused_position_.y_m = 0;
+  fused_position_.angle = 0;
+
 }
 
 void MarvelmindPositionFusionNode::on_left_position_receive_(PositionMsg::ConstSharedPtr p_msg)
@@ -109,9 +121,9 @@ void MarvelmindPositionFusionNode::on_left_position_receive_(PositionMsg::ConstS
     "Received position from left beacon: <x, y, heading> = <%03.3f m, %03.3f m, %03.3f DEG???>",
     p_msg->x_m, p_msg->y_m, p_msg->angle
   );
-  // TODO: What to do with position
-  // For now just save
-  fused_position_ = *p_msg;
+
+  // Both left and right beacons give center position:
+  feed_new_position_measurement_to_filter_(p_msg);
 }
 
 void MarvelmindPositionFusionNode::on_right_position_receive_(PositionMsg::ConstSharedPtr p_msg)
@@ -121,9 +133,15 @@ void MarvelmindPositionFusionNode::on_right_position_receive_(PositionMsg::Const
     "Received position from right beacon: <x, y, heading> = <%03.3f m, %03.3f m, %03.3f DEG???>",
     p_msg->x_m, p_msg->y_m, p_msg->angle
   );
-  // TODO: What to do with position
-  // For now just save
-  fused_position_ = *p_msg;
+  // Both left and right beacons give center position:
+  feed_new_position_measurement_to_filter_(p_msg);
+}
+
+void MarvelmindPositionFusionNode::feed_new_position_measurement_to_filter_(PositionMsg::ConstSharedPtr p_msg)
+{
+  fused_position_.x_m = (fusion_alpha_ * fused_position_.x_m) + (1.0f - fusion_alpha_) * (p_msg->x_m);
+  fused_position_.y_m = (fusion_alpha_ * fused_position_.y_m) + (1.0f - fusion_alpha_) * (p_msg->y_m);
+  fused_position_.angle = (fusion_alpha_ * fused_position_.angle) + (1.0f - fusion_alpha_) * (p_msg->angle);
 }
 
 void MarvelmindPositionFusionNode::on_position_broadcast_timer_trigger_()
