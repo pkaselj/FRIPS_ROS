@@ -5,7 +5,7 @@ marvelmind_ros2_left_beacon:
     marvelmind_publish_rate_in_hz: 200
     marvelmind_tty_baudrate: 9600 # likely does not every need to change
     # marvelmind_tty_filename: "/dev/ttyACM0"
-    marvelmind_tty_filename: "/dev/ttyACM3"
+    marvelmind_tty_filename: "/dev/ttyACM1"
 
 marvelmind_ros2_right_beacon:
   ros__parameters:
@@ -13,7 +13,7 @@ marvelmind_ros2_right_beacon:
     hedgehog_pos_angle_topic: "/position_measurement/right" # Paired beacons
     marvelmind_publish_rate_in_hz: 200
     marvelmind_tty_baudrate: 9600 # likely does not every need to change
-    marvelmind_tty_filename: "/dev/ttyACM1"
+    marvelmind_tty_filename: "/dev/ttyACM2"
 
 rover_controller_node:
   ros__parameters:
@@ -34,8 +34,8 @@ rover_fwd_kinm_node:
 
 rover_interface_node:
   ros__parameters:
-    # port_name: /dev/ttyUSB0
-    port_name: /dev/ttyACM0
+    port_name: /dev/ttyUSB0
+    # port_name: /dev/ttyACM0
     baud_rate: 9600
     received_msg_broadcast: /rover_receiver
     transmit_request: /rover_transmitter
@@ -78,3 +78,6 @@ marvelmind_position_fusion_node:
     fused_position_topic: /position_measurement
     fused_position_qos: 10
     fused_position_broadcast_rate_hz: 1.0
+    # Exponential averaging filter: weight
+    # of old measurement
+    fusion_exponential_averaging_alpha: 0.8
