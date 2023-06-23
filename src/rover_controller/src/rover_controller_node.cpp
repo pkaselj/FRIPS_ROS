@@ -2,12 +2,15 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rover_messages/msg/rover_heading.hpp"
 #include "marvelmind_ros2_msgs/msg/hedge_position_angle.hpp"
+#include "std_msgs/msg/string.hpp"
 #include <chrono>
 #include <memory>
 #include <functional>
+#include <string>
 
 #define EPSILON 0.05f
 
+using StringMsg = std_msgs::msg::String;
 using CommandMsg = rover_messages::msg::RoverHeading;
 using PositionMsg = marvelmind_ros2_msgs::msg::HedgePositionAngle;
 
@@ -23,6 +26,7 @@ class RoverController : public rclcpp::Node
   rclcpp::TimerBase::SharedPtr p_timer_;
   rclcpp::Subscription<PositionMsg>::SharedPtr p_position_subscriber_;
   rclcpp::Subscription<PositionMsg>::SharedPtr p_setpoint_subscriber_;
+  rclcpp::Subscription<StringMsg>::SharedPtr p_controller_commands_subscriber_;
 
   // Relative to Rover WCS (RWCS)
   PositionMsg current_position_;
@@ -31,9 +35,12 @@ class RoverController : public rclcpp::Node
 
   double max_speed_magnitude_;
 
+  bool f_is_controller_running;
+
   void timer_callback_();
   void position_receive_callback_(PositionMsg::ConstSharedPtr);
   void setpoint_receive_callback_(PositionMsg::ConstSharedPtr);
+  void on_controller_command_received_(StringMsg::ConstSharedPtr);
   
   void publish_stop_command_();
   void publish_heading_command_();
@@ -43,12 +50,14 @@ RoverController::RoverController()
   : Node("rover_controller")
 {
   this->declare_parameter("command_topic", "rover_commands");
+  this->declare_parameter("controller_commands_topic", "controller_commands");
   this->declare_parameter("position_topic", "position_topic");
   this->declare_parameter("setpoint_topic", "setpoint_topic");
   this->declare_parameter("publish_rate_ms", 1000);
   this->declare_parameter("max_speed_magnitude", 1.0f);
 
   auto command_topic = this->get_parameter("command_topic").as_string();
+  auto controller_commands_topic = this->get_parameter("controller_commands_topic").as_string();
   auto position_topic = this->get_parameter("position_topic").as_string();
   auto setpoint_topic = this->get_parameter("setpoint_topic").as_string();
   auto rate_ms = this->get_parameter("publish_rate_ms").as_int();
@@ -77,10 +86,15 @@ RoverController::RoverController()
   auto setpoint_callback = std::bind(&RoverController::setpoint_receive_callback_, this, _1);
   p_setpoint_subscriber_ = this->create_subscription<PositionMsg>(setpoint_topic, 10, setpoint_callback);
 
+  auto controller_commands_callback = std::bind(&RoverController::on_controller_command_received_, this, _1);
+  p_controller_commands_subscriber_ = this->create_subscription<StringMsg>(controller_commands_topic, 10, controller_commands_callback);
+
   setpoint_position_ = PositionMsg();
   setpoint_position_.x_m = 0;
   setpoint_position_.y_m = 0;
   setpoint_position_.angle = 0;
+
+  f_is_controller_running = false;
 }
 
 static bool is_target_at_destination_(double target_x, double target_y, double dest_x, double dest_y)
@@ -90,6 +104,19 @@ static bool is_target_at_destination_(double target_x, double target_y, double d
 
 void RoverController::timer_callback_()
 {
+  if (!f_is_controller_running)
+  {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "Rover controller not executing control algorithms beacuse it is stopped. "
+      "To start control algorithms, send 'START' command to '%s'.",
+      p_controller_commands_subscriber_->get_topic_name()
+    );
+
+    return;
+  }
+  
+
   if (
     is_target_at_destination_(
       current_position_.x_m,  /* TARGET.X */
@@ -124,6 +151,30 @@ void RoverController::setpoint_receive_callback_(PositionMsg::ConstSharedPtr new
   setpoint_position_.y_m = new_setpoint->y_m;
   // TODO: Should be ignored?
   setpoint_position_.angle = new_setpoint->angle;
+}
+
+void RoverController::on_controller_command_received_(StringMsg::ConstSharedPtr p_msg)
+{
+  auto command = p_msg->data;
+  std::transform(command.begin(), command.end(), command.begin(), ::toupper);
+
+  RCLCPP_INFO(this->get_logger(), "Recevied '%s' command.", command.c_str());
+
+  if (command == "START")
+  {
+      RCLCPP_DEBUG(this->get_logger(), "Controller started.");
+      f_is_controller_running = true;
+  }
+  else if (command == "STOP")
+  {
+      RCLCPP_DEBUG(this->get_logger(), "Controller stopped.");
+      f_is_controller_running = false;
+  }
+  else
+  {
+    RCLCPP_WARN(this->get_logger(), "Unknown command '%s'.", command.c_str());
+  }
+  
 }
 
 void RoverController::publish_stop_command_()

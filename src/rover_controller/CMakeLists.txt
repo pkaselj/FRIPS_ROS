@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rover_messages REQUIRED)
 find_package(marvelmind_ros2_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 
 
 add_executable(rover_controller_node src/rover_controller_node.cpp)
@@ -22,6 +23,7 @@ ament_target_dependencies(
   rover_controller_node
   "rclcpp"
   "geometry_msgs"
+  "std_msgs"
   "rover_messages"
   "marvelmind_ros2_msgs"
 )

@@ -18,6 +18,7 @@ marvelmind_ros2_right_beacon:
 rover_controller_node:
   ros__parameters:
     command_topic: /relative_heading_setpoint
+    controller_commands_topic: /controller_commands
     position_topic: /position_estimate
     setpoint_topic: /position_setpoint
     publish_rate_ms: 1000
