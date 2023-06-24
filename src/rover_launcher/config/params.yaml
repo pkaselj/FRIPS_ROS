@@ -5,7 +5,7 @@ marvelmind_ros2_left_beacon:
     marvelmind_publish_rate_in_hz: 200
     marvelmind_tty_baudrate: 9600 # likely does not every need to change
     # marvelmind_tty_filename: "/dev/ttyACM0"
-    marvelmind_tty_filename: "/dev/ttyACM1"
+    marvelmind_tty_filename: "/dev/ttyACM0"
 
 marvelmind_ros2_right_beacon:
   ros__parameters:
@@ -13,7 +13,7 @@ marvelmind_ros2_right_beacon:
     hedgehog_pos_angle_topic: "/position_measurement/right" # Paired beacons
     marvelmind_publish_rate_in_hz: 200
     marvelmind_tty_baudrate: 9600 # likely does not every need to change
-    marvelmind_tty_filename: "/dev/ttyACM2"
+    marvelmind_tty_filename: "/dev/ttyACM1"
 
 rover_controller_node:
   ros__parameters:
@@ -21,8 +21,8 @@ rover_controller_node:
     controller_commands_topic: /controller_commands
     position_topic: /position_estimate
     setpoint_topic: /position_setpoint
-    publish_rate_ms: 1000
-    max_speed_magnitude: 0.1
+    publish_rate_ms: 250
+    max_speed_magnitude: 0.07
 
 rover_fwd_kinm_node:
   ros__parameters:
@@ -36,6 +36,7 @@ rover_fwd_kinm_node:
 rover_interface_node:
   ros__parameters:
     port_name: /dev/ttyUSB0
+    #port_name: COM20
     # port_name: /dev/ttyACM0
     baud_rate: 9600
     received_msg_broadcast: /rover_receiver
@@ -45,7 +46,7 @@ rover_interface_node:
 
 rover_inv_kinm_node:
   ros__parameters:
-    wheel_to_body_center_distance_m: 0.200
+    wheel_to_body_center_distance_m: 0.225
     wheel_radius_m: 0.075
     heading_input_topic: /relative_heading_setpoint
     heading_input_qos: 10
@@ -58,7 +59,7 @@ rover_pose_estimator_node:
     position_input_topic: /position_measurement
     position_output_topic: /position_estimate
     relative_heading_input_topic: /relative_heading_estimate_from_odometry
-    broadcast_rate_ms:  200
+    broadcast_rate_ms:  10
 
 rover_protocol_hub_node:
   ros__parameters:
@@ -79,7 +80,7 @@ marvelmind_position_fusion_node:
     position_measurement_right_qos: 10
     fused_position_topic: /position_measurement
     fused_position_qos: 10
-    fused_position_broadcast_rate_hz: 1.0
+    fused_position_broadcast_rate_hz: 50.0 # Must be float, else node crashes
     # Exponential averaging filter: weight
     # of old measurement
-    fusion_exponential_averaging_alpha: 0.8
+    fusion_exponential_averaging_alpha: 0.3

@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 
-#define EPSILON 0.05f
+#define EPSILON 0.25f
 
 using StringMsg = std_msgs::msg::String;
 using CommandMsg = rover_messages::msg::RoverHeading;
@@ -169,6 +169,9 @@ void RoverController::on_controller_command_received_(StringMsg::ConstSharedPtr 
   {
       RCLCPP_DEBUG(this->get_logger(), "Controller stopped.");
       f_is_controller_running = false;
+      // Send command to stop immediately, instead rover would continue
+      // for the duration of current command
+      publish_stop_command_();
   }
   else
   {

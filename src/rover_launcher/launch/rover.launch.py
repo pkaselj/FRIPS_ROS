@@ -41,7 +41,7 @@ def generate_launch_description():
             parameters=get_parameters('rover_launcher'),
             arguments=(
                 '--ros-args',
-                '--log-level', 'DEBUG'
+                '--log-level', 'INFO'
             )
         ),
         Node(
