@@ -84,3 +84,7 @@ marvelmind_position_fusion_node:
     # Exponential averaging filter: weight
     # of old measurement
     fusion_exponential_averaging_alpha: 0.3
+    center_distance_from_left_node_percent: 0.2
+    pair_distance_m: 2.0
+    are_beacons_paired: False
+    position_buffer_size: 5
