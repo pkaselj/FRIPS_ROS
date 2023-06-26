@@ -26,6 +26,9 @@ private:
   float pair_distance_m_;
   bool f_are_beacon_paired_;
 
+  int left_beacon_address;
+  int right_beacon_address;
+
   int position_buffer_size_;
 
   // TODO Send status update when buffer is full
@@ -69,6 +72,11 @@ MarvelmindPositionFusionNode::MarvelmindPositionFusionNode()
   this->declare_parameter("are_beacons_paired", false);
   this->declare_parameter("fusion_exponential_averaging_alpha", 0.8f);
   this->declare_parameter("position_buffer_size", 10);
+  this->declare_parameter("left_beacon_address", 7);
+  this->declare_parameter("right_beacon_address", 8);
+
+  left_beacon_address = this->get_parameter("left_beacon_address").as_int();
+  right_beacon_address = this->get_parameter("right_beacon_address").as_int();
 
 
   auto set_position_buffer_size = this->get_parameter("position_buffer_size").as_int();
@@ -218,6 +226,18 @@ MarvelmindPositionFusionNode::MarvelmindPositionFusionNode()
 
 void MarvelmindPositionFusionNode::on_left_position_receive_(PositionMsg::ConstSharedPtr p_msg)
 {
+  if (p_msg->address != left_beacon_address)
+  {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "Expected position of beacon with address %d got %d. Discarding reading.",
+      left_beacon_address, p_msg->address
+    );
+
+    return;
+  }
+  
+
   RCLCPP_DEBUG(
     this->get_logger(),
     "Received position from left beacon: <x, y, heading> = <%03.3f m, %03.3f m, %03.3f DEG>",
@@ -268,6 +288,17 @@ void MarvelmindPositionFusionNode::on_left_position_receive_(PositionMsg::ConstS
 
 void MarvelmindPositionFusionNode::on_right_position_receive_(PositionMsg::ConstSharedPtr p_msg)
 {
+  if (p_msg->address != right_beacon_address)
+  {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "Expected position of beacon with address %d got %d. Discarding reading.",
+      right_beacon_address, p_msg->address
+    );
+
+    return;
+  }
+  
   RCLCPP_DEBUG(
     this->get_logger(),
     "Received position from right beacon: <x, y, heading> = <%03.3f m, %03.3f m, %03.3f DEG>",
