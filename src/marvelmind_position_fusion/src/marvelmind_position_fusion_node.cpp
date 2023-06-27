@@ -226,7 +226,16 @@ MarvelmindPositionFusionNode::MarvelmindPositionFusionNode()
 
 void MarvelmindPositionFusionNode::on_left_position_receive_(PositionMsg::ConstSharedPtr p_msg)
 {
-  if (p_msg->address != left_beacon_address)
+  if (p_msg->address == right_beacon_address)
+  {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "Left beacon read location from right beacon. Rerouting callback..."
+    );
+    on_right_position_receive_(p_msg);
+    return;
+  }
+  else if (p_msg->address != left_beacon_address)
   {
     RCLCPP_DEBUG(
       this->get_logger(),
@@ -288,7 +297,16 @@ void MarvelmindPositionFusionNode::on_left_position_receive_(PositionMsg::ConstS
 
 void MarvelmindPositionFusionNode::on_right_position_receive_(PositionMsg::ConstSharedPtr p_msg)
 {
-  if (p_msg->address != right_beacon_address)
+  if (p_msg->address == left_beacon_address)
+  {
+    RCLCPP_DEBUG(
+      this->get_logger(),
+      "Right beacon read location from left beacon. Rerouting callback..."
+    );
+    on_left_position_receive_(p_msg);
+    return;
+  }
+  else if (p_msg->address != right_beacon_address)
   {
     RCLCPP_DEBUG(
       this->get_logger(),
@@ -376,14 +394,17 @@ void MarvelmindPositionFusionNode::on_position_broadcast_timer_trigger_()
 
     const auto d_y = left_beacon_filtered_position_.y_m - right_beacon_filtered_position_.y_m;
     const auto d_x = left_beacon_filtered_position_.x_m - right_beacon_filtered_position_.x_m;
-
+	
+    // This is angle of line that goes through beacons.
     auto angle_deg = atan2(d_y, d_x) * (360.0f / 6.28f);
+    // Subtract 90 DEG to get heading angle
+    auto heading_deg = angle_deg - 90;
     auto center_x = (1 - p) * d_x + right_beacon_filtered_position_.x_m;
     auto center_y = (1 - p) * d_y + right_beacon_filtered_position_.y_m;
 
     fused_position_.x_m = center_x;
     fused_position_.y_m = center_y;
-    fused_position_.angle = angle_deg;
+    fused_position_.angle = heading_deg;
   }
   
   RCLCPP_DEBUG(

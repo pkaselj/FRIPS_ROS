@@ -5,7 +5,8 @@
     ],
     "python.analysis.extraPaths": [
         "C:\\ci\\ws\\install\\lib\\python3.8\\dist-packages",
-        "A:\\dev\\ros2_humble\\Lib\\site-packages"
+        "A:\\dev\\ros2_humble\\Lib\\site-packages",
+        "./build/marvelmind_ros2_msgs/rosidl_generator_py"
     ],
     "files.associations": {
         "xutility": "cpp",
