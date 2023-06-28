@@ -7,8 +7,13 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <cmath>
 
-#define EPSILON 0.25f
+#ifndef M_PI
+#define M_PI 3.141
+#endif
+
+#define POSITION_EPSILON 0.10f
 
 using StringMsg = std_msgs::msg::String;
 using CommandMsg = rover_messages::msg::RoverHeading;
@@ -99,7 +104,7 @@ RoverController::RoverController()
 
 static bool is_target_at_destination_(double target_x, double target_y, double dest_x, double dest_y)
 {
-  return (fabs(dest_x - target_x) < EPSILON) && (fabs(dest_y - target_y) < EPSILON);
+  return (fabs(dest_x - target_x) < POSITION_EPSILON) && (fabs(dest_y - target_y) < POSITION_EPSILON);
 }
 
 void RoverController::timer_callback_()
@@ -115,7 +120,6 @@ void RoverController::timer_callback_()
 
     return;
   }
-  
 
   if (
     is_target_at_destination_(
@@ -127,7 +131,15 @@ void RoverController::timer_callback_()
   )
   {
     publish_stop_command_();
-    RCLCPP_DEBUG(this->get_logger(), "Target is at destination.");
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Setpoint <%03.3f, %03.3f> "
+      "Target <%03.3f, %03.3f, %03.3f> "
+      " is at destination!",
+      setpoint_position_.x_m, setpoint_position_.y_m,
+      current_position_.x_m, current_position_.y_m, current_position_.angle
+    );
+    f_is_controller_running = false;
     return; // Stay in place
   }
   
@@ -136,7 +148,7 @@ void RoverController::timer_callback_()
 
 void RoverController::position_receive_callback_(PositionMsg::ConstSharedPtr new_position)
 {
-  RCLCPP_DEBUG(this->get_logger(), "Received position update.");
+  // RCLCPP_DEBUG(this->get_logger(), "Received position update.");
 
   current_position_.x_m = new_position->x_m;
   current_position_.y_m = new_position->y_m;
@@ -200,7 +212,7 @@ void RoverController::publish_heading_command_()
   auto delta_y_m_rwcs = setpoint_position_.y_m - current_position_.y_m;
 
   auto distance_m = sqrt(delta_x_m_rwcs * delta_x_m_rwcs + delta_y_m_rwcs * delta_y_m_rwcs);
-  auto delta_angle_deg_rwcs = (360.0f / 6.28f) * atan2(delta_y_m_rwcs, delta_x_m_rwcs);
+  auto delta_angle_deg_rwcs = (180.0f / M_PI) * atan2(delta_y_m_rwcs, delta_x_m_rwcs);
 
   // Angle of attack is defined as difference of 
   // setpoint's angle in RWCS system and rover's
@@ -210,13 +222,13 @@ void RoverController::publish_heading_command_()
 
   // Rover heading
   auto relative_direction_deg = angle_of_attack_deg;
-  message.relative_direction_rad = (6.28f / 360.0f) * angle_of_attack_deg;
+  message.relative_direction_rad = (M_PI / 180.0f) * angle_of_attack_deg;
   message.speed_m_s = max_speed_magnitude_;
   message.durations_ms = 1000 * (distance_m / message.speed_m_s);
 
   this->p_command_publisher_->publish(message);
 
-  RCLCPP_DEBUG(
+  RCLCPP_INFO(
     this->get_logger(),
     "Setpoint <%03.3f, %03.3f> "
     "Target <%03.3f, %03.3f, %03.3f> "

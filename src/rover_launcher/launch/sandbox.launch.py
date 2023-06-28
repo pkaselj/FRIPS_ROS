@@ -34,16 +34,16 @@ def generate_launch_description():
         #         '--log-level', 'INFO'
         #     )
         # ),
-        Node(
-            package='rover_pose_estimator',
-            executable='rover_pose_estimator_node',
-            name='rover_pose_estimator_node',
-            parameters=get_parameters('rover_launcher'),
-            arguments=(
-                '--ros-args',
-                '--log-level', 'INFO'
-            )
-        ),
+        # Node(
+        #     package='rover_pose_estimator',
+        #     executable='rover_pose_estimator_node',
+        #     name='rover_pose_estimator_node',
+        #     parameters=get_parameters('rover_launcher'),
+        #     arguments=(
+        #         '--ros-args',
+        #         '--log-level', 'INFO'
+        #     )
+        # ),
         Node(
             package='rover_protocol_hub',
             executable='rover_protocol_hub_node',

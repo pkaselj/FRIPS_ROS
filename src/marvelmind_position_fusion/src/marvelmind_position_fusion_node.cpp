@@ -4,6 +4,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "marvelmind_ros2_msgs/msg/hedge_position_angle.hpp"
 
+#define MAX_COORDINATE_HOP 0.1
+
 using std::placeholders::_1;
 
 using PositionMsg = marvelmind_ros2_msgs::msg::HedgePositionAngle;
@@ -402,9 +404,25 @@ void MarvelmindPositionFusionNode::on_position_broadcast_timer_trigger_()
     auto center_x = (1 - p) * d_x + right_beacon_filtered_position_.x_m;
     auto center_y = (1 - p) * d_y + right_beacon_filtered_position_.y_m;
 
-    fused_position_.x_m = center_x;
-    fused_position_.y_m = center_y;
-    fused_position_.angle = heading_deg;
+    // Crude low-pass (discard outliers)
+    if (
+      fabs(center_x - fused_position_.x_m) < MAX_COORDINATE_HOP
+      && fabs(center_y - fused_position_.y_m) < MAX_COORDINATE_HOP)
+    {
+      // Update position prediction
+      fused_position_.x_m = center_x;
+      fused_position_.y_m = center_y;
+      fused_position_.angle = heading_deg;
+    }
+    else
+    {
+      // else aggressive EMA
+      auto alpha = 0.1;
+      fused_position_.x_m = fused_position_.x_m * (1 - alpha) + center_x * alpha;
+      fused_position_.y_m = fused_position_.y_m * (1 - alpha) + center_y * alpha;
+      fused_position_.angle = fused_position_.angle * (1 - alpha) + heading_deg * alpha;
+    }
+
   }
   
   RCLCPP_DEBUG(
