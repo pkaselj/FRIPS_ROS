@@ -1,3 +1,25 @@
+"""
+    This is a ROS2 launch script to start all nodes for FRIPS_ROS.
+    Following nodes are started:
+
+    - rover_controller\rover_controller_node as rover_controller_node
+    - rover_interface\rover_interface_node as rover_interface_node
+    - rover_pose_estimator\rover_pose_estimator_node as rover_pose_estimator_node
+    - rover_protocol_hub\rover_protocol_hub_node as rover_protocol_hub_node
+    - rover_forward_kinematics\rover_fwd_kinm_node as rover_fwd_kinm_node
+    - rover_inverse_kinematics\rover_inv_kinm_node as rover_inv_kinm_node
+    - marvelmind_ros2\marvelmind_ros2 as marvelmind_ros2_left_beacon
+    - marvelmind_ros2\marvelmind_ros2 as marvelmind_ros2_right_beacon
+    - marvelmind_position_fusion\marvelmind_position_fusion_node as marvelmind_position_fusion_node
+
+    How to run:
+    - Source ROS2 underlay
+    - Source FRIPS_ROS overlay
+    - ros2 launch rover_launcher rover.launch.py
+
+    Author: Petar Kaselj
+"""
+
 import os
 from launch import LaunchDescription
 from launch_ros.actions import Node

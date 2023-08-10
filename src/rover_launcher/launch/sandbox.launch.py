@@ -1,3 +1,26 @@
+"""
+    This is a ROS2 launch script to start nodes for FRIPS_ROS excluding PHY nodes.
+    * PHY nodes are nodes that interact with hardware and/or communication
+
+    This launcher starts only higher level nodes so that PHY nodes can be
+    faked and simulated. Use this launcher with Visualizer or Simulator Tool
+    from rover_tools package.
+
+    Following nodes are started:
+
+    - rover_controller\rover_controller_node as rover_controller_node
+    - rover_protocol_hub\rover_protocol_hub_node as rover_protocol_hub_node
+    - rover_forward_kinematics\rover_fwd_kinm_node as rover_fwd_kinm_node
+    - rover_inverse_kinematics\rover_inv_kinm_node as rover_inv_kinm_node
+
+    How to run:
+    - Source ROS2 underlay
+    - Source FRIPS_ROS overlay
+    - ros2 launch rover_launcher sandbox.launch.py
+
+    Author: Petar Kaselj
+"""
+
 import os
 from launch import LaunchDescription
 from launch_ros.actions import Node

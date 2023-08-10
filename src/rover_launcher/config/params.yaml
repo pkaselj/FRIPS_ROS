@@ -1,3 +1,17 @@
+# -------------------------------------------------------------------------------- #
+# Configuration (Parameter) file for all nodes launched with python launch scripts
+# from launch\ folder
+# Author: Petar Kaselj
+# -------------------------------------------------------------------------------- #
+
+# Note: for all changes follow the format of current values,
+# because ROS has a quirk when loading numeric parameters:
+# all floating point numbers that are not explicitly written
+# with a floating part break the ROS framework i.e. 50.0 would
+# be fine but 50 would throw an error that is hard to understand
+
+# Paremeters are grouped by node names
+
 marvelmind_ros2_left_beacon:
   ros__parameters:
     hedgehog_pos_topic: "/unused/hedgehog_pos_topic" # Rover
@@ -35,8 +49,9 @@ rover_fwd_kinm_node:
 
 rover_interface_node:
   ros__parameters:
-    port_name: /dev/ttyUSB0
-    #port_name: COM20
+    port_name: COM3
+    # port_name: /dev/ttyUSB0
+    # port_name: COM20
     # port_name: /dev/ttyACM0
     baud_rate: 9600
     received_msg_broadcast: /rover_receiver
