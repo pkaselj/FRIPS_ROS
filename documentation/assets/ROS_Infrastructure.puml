@@ -1,0 +1,56 @@
+@startuml
+
+package "Kinematics" {
+  [Inverse Kinematics]
+  [Forward Kinematics]
+}
+
+package "Communication" {
+  [Protocol Hub]
+}
+
+package "Data Fusion" {
+  [Marvelmind Position Fusion]
+}
+
+package "Estimation" {
+  [Pose Estimator]
+}
+
+package "Command and Control" {
+  [Rover Controller]
+}
+
+package "Physical Layer" {
+  package "PHY Layer - Marvelmind" {
+    [Marvelmind Beacon - Left]
+    [Marvelmind Beacon - Right]
+  }
+
+  package "PHY Layer - Rover" {
+    [Rover Interface]
+  }
+}
+
+
+[Marvelmind Beacon - Left] -up-> [Marvelmind Position Fusion] : /position_measurement/left
+[Marvelmind Beacon - Right] -up-> [Marvelmind Position Fusion] : /position_measurement/right
+
+[Marvelmind Position Fusion] -up-> [Pose Estimator] : /position_measurement
+
+[Pose Estimator] -down-> [Rover Controller] : /position_estimate
+
+[Rover Controller] -down-> [Inverse Kinematics] : /relative_heading_setpoint
+
+[Inverse Kinematics] -down-> [Protocol Hub] : /command
+
+[Protocol Hub] -down-> [Rover Interface] : /rover_transmitter
+
+[Protocol Hub] <-down- [Rover Interface] : /rover_receiver
+
+[Protocol Hub] -up-> [Forward Kinematics] : /odometry
+
+[Forward Kinematics] -up-> [Pose Estimator] : /relative_heading_estimate
+
+
+@enduml
