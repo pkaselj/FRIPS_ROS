@@ -39,7 +39,7 @@ To systematize the use of coordinate systems, here are some rules and guidelines
 `Rover Global Frame - RGF (Rover World Coordinate System - RWCS)`:
   - A stationary frame, convenient for navigation, positioning, orientation, etc.
   - The main frame for positioning and orientation. Should be used as much as possible in place of other frames.
-  - Defined at each runtime by publishing its position **relative to MWCS/MGF frame** to [`rover_world_origin_topic`](/documentation/rover_launcher/Sandboxing.md).
+  - Defined at each runtime by publishing its position **relative to MWCS/MGF frame** to [`rover_world_origin_topic`](/documentation/rover_launcher/Parameters.md).
 
 `Marvelmind Global Frame - MGF (Marvelmind World Coordinate System - MWCS)`:
   - A stationary frame, defined and used by *Techtile Marvelmind* indoor positioning system.
