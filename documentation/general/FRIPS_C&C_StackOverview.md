@@ -48,4 +48,29 @@ Following is a short overview of nodes in FRIPS C&C Stack and the tasks they per
 - Since two *Marvelmind* beacons are used, one can only give position while two can give both position and orientation, this node is responsible for providing the rest of the FRIPS C&C Stack with information on rover's position and orientation based on positions of each beacon (left/right).
 - This node has two modes of operation (see [Parameters Manual](/documentation/rover_launcher/Parameters.md)), controlled by `are_beacons_paired` switch in [`params.yaml`](/src/rover_launcher/config/params.yaml) depending if the beacons are paired manually (refer to the official *Marvelmind* documentation for more information) i.e. beacons broadcast, not their own position, but position and orientation of the beacon pair. Other mode of operation is manual pair position and orientation calculation based on each beacon's specific position.
 
+## Further Upgrades
+
+The system, as described in the previous chapter, is a part of the whole design. The system was designed to support autonomous navigation as well as obstacle avoidance, but due to time and quality restrictions, only a part of the system was implemented. The rest of the system will be implemented in the future.
+
+![Illustration of the original (whole) FRIPS C&C Stack design](/documentation/assets/ROS_Infrastructure_TODO.png)
+
+The figure above lays out the design of the original (whole) system. The nodes in red are not yet implemented, but are a part of the whole design that supports autonomous/intelligent functions.
+
+Below is an overview of unimplemented nodes adn their tasks:
+
+`Sonar Array Node`:
+- The main task of this node is obstacle detection.
+- Interfaces with existing *Arduino Zero/M0* on the rover, which is connected to the 12-element sonar array mounted on the sides of the rover.
+- Provides the *Stack* with information on the environment, primarily obstacles in the rover's vicinity.
+
+`Path Planning Node`:
+- Node that has 2 primary functions; constructing an *image* of the environment and path planning
+- Environment can be represented in any form e.g. 2D array which is the quantized map of the rover's enviroment
+- Path planning can be implemented using any viable algorithm, depending how the environment is represented (*image*) e.g. *Potential Fields Method* combined with *A\* Path Search Algorithm*.
+- The path is published to the `Waypoint Controller Node` for further processing.
+
+`Waypoint Controller Node`:
+- Node that receives a path from `Path Planning Node`, in any form used and defined by the mentioned node, and transforms it into a series of *3D points* which will be published down the Stack (to `Rover Controller Node`) as *target positions (position setpoints)*, one by one, until the rover reaches the end of the path. The third dimension is the height of the scissor lift, which should have a separate node designed and implemented.
+- The node should have the ability to handle dynamic path i.e. a path changing in real time.  
+
 
