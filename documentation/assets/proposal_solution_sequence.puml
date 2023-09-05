@@ -1,0 +1,57 @@
+@startuml
+
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+skinparam DefaultTextAlignment center
+skinparam SequenceBoxBackgroundColor #eeeeee 
+
+box "User Interface"
+actor User
+participant PC
+end box
+
+box "FRIPS Command & Control Stack"
+participant "Raspberry Pi\n(Command & Control Stack)" as RPi
+participant Rover
+end box
+
+participant "Measurement Equipment" as MeasEq
+
+group Measurement Process
+
+    User -> PC : Begin Session
+    PC -> RPi : Begin Session
+
+    activate RPi
+
+    loop \t\tFor each point on path\t\t
+        RPi -> Rover : Go to <X, Y, Z>
+        RPi <-- Rover : Success
+
+        RPi -> MeasEq : Measurement Request
+        RPi <-- MeasEq :  Measurement Result <M>
+        RPi -> RPi : Save Result\n<X, Y, Z, t, M>
+    end
+
+    deactivate RPi
+
+    RPi -> RPi : Format Results\nas a File
+
+end
+
+group Retrieval Process
+
+    User -> PC : Retrieve Session Results
+    PC -> RPi : Retrieve Session Results
+
+    RPi --> PC : Results File
+
+end
+
+group Review Process
+
+    PC <-> User : Review Results
+
+end
+
+@enduml

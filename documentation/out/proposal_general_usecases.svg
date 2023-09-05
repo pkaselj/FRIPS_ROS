@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="724px" preserveAspectRatio="none" style="width:1363px;height:724px;background:#FFFFFF;" version="1.1" viewBox="0 0 1363 724" width="1363px" zoomAndPan="magnify"><defs/><g><!--MD5=[6fb85caec986981a4f47edcf58a529e6]
+cluster Rover--><g id="cluster_Rover"><rect fill="none" height="711.5" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1.0;" width="1024" x="56.5" y="7"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="43" x="547" y="28.5332">Rover</text></g><!--MD5=[e64df98bdbddc940467ae8416b4e3a80]
+cluster sonar--><g id="cluster_sonar"><path d="M775,326.5 L867,326.5 A3.75,3.75 0 0 1 869.5,329 L876.5,360.1094 L1054,360.1094 A2.5,2.5 0 0 1 1056.5,362.6094 L1056.5,441 A2.5,2.5 0 0 1 1054,443.5 L775,443.5 A2.5,2.5 0 0 1 772.5,441 L772.5,329 A2.5,2.5 0 0 1 775,326.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="772.5" x2="876.5" y1="360.1094" y2="360.1094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="81" x="781.5" y="348.0332">Sonar Array</text></g><!--MD5=[4552c3fbf266e12f8933058a26855bb8]
+cluster rover_controller--><g id="cluster_rover_controller"><path d="M738,467.5 L867,467.5 A3.75,3.75 0 0 1 869.5,470 L876.5,501.1094 L1007,501.1094 A2.5,2.5 0 0 1 1009.5,503.6094 L1009.5,692 A2.5,2.5 0 0 1 1007,694.5 L738,694.5 A2.5,2.5 0 0 1 735.5,692 L735.5,470 A2.5,2.5 0 0 1 738,467.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="735.5" x2="876.5" y1="501.1094" y2="501.1094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="118" x="744.5" y="489.0332">Rover Controller</text></g><!--MD5=[7ba871f2a52e69f9b60bc0a0142c5bd2]
+cluster cc_stack--><g id="cluster_cc_stack"><path d="M83,61 L275,61 A3.75,3.75 0 0 1 277.5,63.5 L284.5,94.6094 L693,94.6094 A2.5,2.5 0 0 1 695.5,97.1094 L695.5,578 A2.5,2.5 0 0 1 693,580.5 L83,580.5 A2.5,2.5 0 0 1 80.5,578 L80.5,63.5 A2.5,2.5 0 0 1 83,61 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="80.5" x2="284.5" y1="94.6094" y2="94.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="181" x="89.5" y="82.5332">Command &amp; Control Stack</text></g><!--MD5=[cd84535c1998e2aa7d3343d98a2d11e9]
+cluster meas_eq--><g id="cluster_meas_eq"><path d="M1107,191.5 L1294,191.5 A3.75,3.75 0 0 1 1296.5,194 L1303.5,225.1094 L1354,225.1094 A2.5,2.5 0 0 1 1356.5,227.6094 L1356.5,300 A2.5,2.5 0 0 1 1354,302.5 L1107,302.5 A2.5,2.5 0 0 1 1104.5,300 L1104.5,194 A2.5,2.5 0 0 1 1107,191.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="1104.5" x2="1303.5" y1="225.1094" y2="225.1094"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="176" x="1113.5" y="213.0332">Measurement Equipment</text></g><g id="elem_sonar_info"><ellipse cx="914.3325" cy="399.9665" fill="#F1F1F1" rx="125.3325" ry="27.4665" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="180" x="824.3325" y="403.695">Get Environment Information</text></g><g id="elem_navigate"><ellipse cx="872.738" cy="540.1476" fill="#F1F1F1" rx="121.238" ry="26.6476" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="170" x="787.738" y="543.8761">Send Movement Command</text></g><g id="elem_feedback"><ellipse cx="870.3178" cy="652.2636" fill="#F1F1F1" rx="116.8178" ry="25.7636" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159" x="790.8178" y="655.9921">Get Movement Feedback</text></g><g id="elem_start_job"><ellipse cx="558.7209" cy="131.7442" fill="#F1F1F1" rx="111.7209" ry="24.7442" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="146" x="485.7209" y="135.4727">Start Measurement Job</text></g><g id="elem_exec_ctrl"><ellipse cx="558.738" cy="262.1476" fill="#F1F1F1" rx="121.238" ry="26.6476" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="170" x="473.738" y="265.8761">Execute Control Algorithms</text></g><g id="elem_save_meas"><ellipse cx="253.62" cy="399.824" fill="#F1F1F1" rx="119.62" ry="26.324" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="166" x="170.62" y="403.5525">Save Measurement Result</text></g><g id="elem_get_results"><ellipse cx="215.3155" cy="262.1631" fill="#F1F1F1" rx="118.8155" ry="26.1631" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164" x="133.3155" y="265.8916">Get Measurement Results</text></g><g id="elem_update_map"><ellipse cx="525.3178" cy="399.7636" fill="#F1F1F1" rx="116.8178" ry="25.7636" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159" x="445.8178" y="403.4921">Update Environment Map</text></g><g id="elem_path_planning"><ellipse cx="547.6832" cy="539.9366" fill="#F1F1F1" rx="110.1832" ry="24.4366" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="142" x="476.6832" y="543.6652">Execute Path Planning</text></g><g id="elem_file"><path d="M142,522 L142,558.3516 L277,558.3516 L277,532 L267,522 L142,522 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M267,522 L267,532 L277,532 L267,522 " fill="#FEFFDD" style="stroke:#181818;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="104" x="153" y="545.4951">Measurement File</text></g><g id="elem_measure"><ellipse cx="1230.4201" cy="261.784" fill="#F1F1F1" rx="109.4201" ry="24.284" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140" x="1160.4201" y="265.5125">Perform Measurement</text></g><!--MD5=[fee662a292a0353a69bd162820bae93b]
+entity User--><g id="elem_User"><ellipse cx="20.5" cy="96" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M20.5,104 L20.5,131 M7.5,112 L33.5,112 M20.5,131 L7.5,146 M20.5,131 L33.5,146 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="29" x="6" y="167.0332">User</text></g><!--MD5=[972fa2ddb18c12d191d568d3e0b6ff0e]
+link navigate to feedback--><!--MD5=[b189956251009af416c9d01ce8608789]
+link sonar_info to navigate--><!--MD5=[08cb27b26b601c515b97181afb410b1d]
+link get_results to save_meas--><!--MD5=[ff39048e1e48392886c17594d0b1934c]
+link start_job to measure--><!--MD5=[f4c171b188628a509cea4bafe656e419]
+link User to start_job--><g id="link_User_start_job"><path d="M40.29,131.5 C40.29,131.5 441.78,131.5 441.78,131.5 " fill="none" id="User-to-start_job" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="446.78,131.5,437.78,127.5,441.78,131.5,437.78,135.5,446.78,131.5" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[3204cf6632fa43269e7ab030430fb81b]
+link User to get_results--><g id="link_User_get_results"><path d="M20.5,175.85 C20.5,213.85 20.5,262.5 20.5,262.5 C20.5,262.5 91.45,262.5 91.45,262.5 " fill="none" id="User-to-get_results" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="96.45,262.5,87.45,258.5,91.45,262.5,87.45,266.5,96.45,262.5" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[1142856251c4ab5df29f7e60f75e8658]
+link start_job to exec_ctrl--><g id="link_start_job_exec_ctrl"><path d="M558.5,156.05 C558.5,156.05 558.5,230.32 558.5,230.32 " fill="none" id="start_job-to-exec_ctrl" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="558.5,235.32,562.5,226.32,558.5,230.32,554.5,226.32,558.5,235.32" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[59568cfbd5acd829a1769fe2964a6775]
+link exec_ctrl to navigate--><g id="link_exec_ctrl_navigate"><path d="M668.5,273.26 C668.5,325.37 668.5,540.5 668.5,540.5 C668.5,540.5 746.47,540.5 746.47,540.5 " fill="none" id="exec_ctrl-to-navigate" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="751.47,540.5,742.47,536.5,746.47,540.5,742.47,544.5,751.47,540.5" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[cb36b1f0155e2cd99489ec10560b0cf2]
+link exec_ctrl to measure--><g id="link_exec_ctrl_measure"><path d="M679.8,262.5 C679.8,262.5 1115.98,262.5 1115.98,262.5 " fill="none" id="exec_ctrl-to-measure" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="1120.98,262.5,1111.98,258.5,1115.98,262.5,1111.98,266.5,1120.98,262.5" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[21f0dacee6210fccdcb30808f8348e5a]
+link exec_ctrl to feedback--><g id="link_exec_ctrl_feedback"><path d="M663,275.44 C663,344.11 663,652.5 663,652.5 C663,652.5 748.41,652.5 748.41,652.5 " fill="none" id="exec_ctrl-to-feedback" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="753.41,652.5,744.41,648.5,748.41,652.5,744.41,656.5,753.41,652.5" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[5fd21a8863e83690d42fa5bd02c51acf]
+link exec_ctrl to sonar_info--><g id="link_exec_ctrl_sonar_info"><path d="M674,270.25 C674,300.07 674,400.5 674,400.5 C674,400.5 783.97,400.5 783.97,400.5 " fill="none" id="exec_ctrl-to-sonar_info" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="788.97,400.5,779.97,396.5,783.97,400.5,779.97,404.5,788.97,400.5" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[ace0edc35df01f4855b909825c48f41e]
+link exec_ctrl to save_meas--><g id="link_exec_ctrl_save_meas"><path d="M437.32,262.5 C393.12,262.5 353.75,262.5 353.75,262.5 C353.75,262.5 353.75,380.54 353.75,380.54 " fill="none" id="exec_ctrl-to-save_meas" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="353.75,385.54,357.7757,376.5515,353.7643,380.54,349.7757,376.5286,353.75,385.54" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[dbb99a762d055635d02ea9ca866156af]
+link exec_ctrl to update_map--><g id="link_exec_ctrl_update_map"><path d="M540,288.28 C540,288.28 540,368.82 540,368.82 " fill="none" id="exec_ctrl-to-update_map" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="540,373.82,544,364.82,540,368.82,536,364.82,540,373.82" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[2b19ed3fb94255f67194369fc289edf2]
+reverse link exec_ctrl to path_planning--><g id="link_exec_ctrl_path_planning"><path d="M650,284.39 C650,284.39 650,531.03 650,531.03 " fill="none" id="exec_ctrl-backto-path_planning" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="650,279.39,646,288.39,650,284.39,654,288.39,650,279.39" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[85427f0b259d6d2dada07d5fbfa131a6]
+link save_meas to file--><g id="link_save_meas_file"><path d="M209.5,424.71 C209.5,452.5 209.5,496.97 209.5,521.78 " fill="none" id="save_meas-file" style="stroke:#181818;stroke-width:3.0;stroke-dasharray:7.0,7.0;"/></g><!--MD5=[9ed2a27c647a11a085324160e40fcd04]
+link get_results to file--><g id="link_get_results_file"><path d="M115.25,276.19 C115.25,332.95 115.25,540.5 115.25,540.5 C115.25,540.5 126.77,540.5 141.75,540.5 " fill="none" id="get_results-file" style="stroke:#181818;stroke-width:3.0;stroke-dasharray:7.0,7.0;"/></g><!--MD5=[37314f8a406392f97da0f16efb083d6b]
+link update_map to path_planning--><g id="link_update_map_path_planning"><path d="M540,426 C540,426 540,510.54 540,510.54 " fill="none" id="update_map-to-path_planning" style="stroke:#181818;stroke-width:3.0;"/><polygon fill="#181818" points="540,515.54,544,506.54,540,510.54,536,506.54,540,515.54" style="stroke:#181818;stroke-width:3.0;"/></g><!--MD5=[d0087cd78fe8c753bd24f6ddf5470667]
+@startuml
+
+skinparam linetype ortho
+skinparam ArrowThickness 3
+skinparam Padding 5
+
+actor User
+
+rectangle "Rover" {
+    package "Sonar Array" as sonar {
+        usecase "Get Environment Information" as sonar_info
+    }
+
+    package "Rover Controller" as rover_controller {
+        usecase "Send Movement Command" as navigate
+        usecase "Get Movement Feedback" as feedback
+
+        navigate -[hidden]- feedback
+    }
+
+    sonar_info -[hidden]- navigate
+
+    package "Command & Control Stack" as cc_stack {
+        usecase "Start Measurement Job" as start_job
+        usecase "Execute Control Algorithms" as exec_ctrl
+        usecase "Save Measurement Result" as save_meas
+        usecase "Get Measurement Results" as get_results
+        usecase "Update Environment Map" as update_map
+        usecase "Execute Path Planning" as path_planning 
+        note "Measurement File" as file
+
+        get_results -[hidden]- save_meas
+    }
+}
+
+package "Measurement Equipment" as meas_eq {
+    usecase "Perform Measurement" as measure
+}
+
+start_job -[hidden]right- measure
+
+
+User -right-> start_job
+User -right-> get_results
+
+start_job -down-> exec_ctrl
+
+exec_ctrl -right-> navigate
+exec_ctrl -right-> measure
+exec_ctrl -right-> feedback
+exec_ctrl -down-> sonar_info
+exec_ctrl -down-> save_meas
+exec_ctrl -down-> update_map
+exec_ctrl <-down- path_planning
+
+save_meas .. file
+get_results .. file
+
+update_map -down-> path_planning
+
+
+
+@enduml
+
+PlantUML version 1.2022.7(Mon Aug 22 19:01:30 CEST 2022)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: Cp1252
+Language: en
+Country: US
+--></g></svg>

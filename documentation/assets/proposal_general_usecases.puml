@@ -1,0 +1,62 @@
+@startuml
+
+' skinparam linetype ortho
+' skinparam ArrowThickness 3
+skinparam Padding 5
+
+actor User
+
+rectangle "Rover" {
+    package "Sonar Array" as sonar {
+        usecase "Get Environment Information" as sonar_info
+    }
+
+    package "Rover Controller" as rover_controller {
+        usecase "Send Movement Command" as navigate
+        usecase "Get Movement Feedback" as feedback
+
+        navigate -[hidden]- feedback
+    }
+
+    package "Command & Control Stack" as cc_stack {
+        usecase "Start Measurement Job" as start_job
+        usecase "Execute Control Algorithms" as exec_ctrl
+        usecase "Save Measurement Result" as save_meas
+        usecase "Get Measurement Results" as get_results
+        usecase "Update Environment Map" as update_map
+        usecase "Execute Path Planning" as path_planning 
+        note "Measurement File" as file
+
+        get_results -[hidden]- save_meas
+    }
+}
+
+package "Measurement Equipment" as meas_eq {
+    usecase "Perform Measurement" as measure
+}
+
+start_job -[hidden]right- measure
+sonar_info -[hidden]down- measure
+
+
+User -right-> start_job
+User -right-> get_results
+
+start_job -down-> exec_ctrl
+
+exec_ctrl -down-> navigate
+exec_ctrl -right-> measure
+exec_ctrl -right-> feedback
+exec_ctrl -up-> sonar_info
+exec_ctrl -down-> save_meas
+exec_ctrl -down-> update_map
+exec_ctrl <-down- path_planning
+
+save_meas .. file
+get_results .. file
+
+update_map -down-> path_planning
+
+
+
+@enduml
