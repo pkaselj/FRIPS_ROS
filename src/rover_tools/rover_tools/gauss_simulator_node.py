@@ -53,6 +53,8 @@ class GaussSimulatorNode(Node):
     command_duration_timer_s = 0
     command_duration_s = 0
 
+    position_history = []
+
     def __init__(self):
 
         # Initializing the node and setting up subscriptions
@@ -78,6 +80,8 @@ class GaussSimulatorNode(Node):
         self.position_estimate_publisher = self.create_publisher(
             HedgePositionAngle, '/position_estimate', 10
         )
+
+        self.position_history = []
 
         # Start pygame...
         pygame.init()
@@ -124,6 +128,9 @@ class GaussSimulatorNode(Node):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.destroy_timer(self.timer)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.position_history = []
 
         self.screen.fill((0, 0, 255))
 
@@ -148,6 +155,15 @@ class GaussSimulatorNode(Node):
             self.command_duration_timer_s += time_delta_s
 
 
+        self.position_history.append(self.center_beacon_pos_estimate)
+        
+        for i, position in enumerate(self.position_history):
+            # if i != len(self.position_history) - 1:
+            #     pygame.draw.circle(self.screen, (255, 255, 255), pos_to_pixels(position), 5)
+            if i != 0:
+                previous_position = self.position_history[i - 1]
+                pygame.draw.line(self.screen, (255, 255, 255), pos_to_pixels(previous_position), pos_to_pixels(position))
+
 
         pygame.draw.circle(self.screen, (255, 0, 0), pos_to_pixels(self.center_beacon_pos_estimate), 5)
         pygame.draw.circle(self.screen, (0, 255, 0), pos_to_pixels(self.setpoint_pos), 5)
@@ -159,10 +175,10 @@ class GaussSimulatorNode(Node):
 
         msg = HedgePositionAngle()
         x_m, y_m = self.center_beacon_pos_estimate
-        x_m += random.gauss(0, 0.05)
-        y_m += random.gauss(0, 0.05)
+        x_m += random.gauss(0, 0.2)
+        y_m += random.gauss(0, 0.2)
         msg.x_m, msg.y_m = float(x_m), float(y_m)
-        msg.angle = float(self.rover_heading_angle_estimate_deg) + random.gauss(0, 5)
+        msg.angle = float(self.rover_heading_angle_estimate_deg) + random.gauss(0, 10)
 
         self.position_estimate_publisher.publish(msg)
         self.previous_iteration_timestamp_s = time.time()

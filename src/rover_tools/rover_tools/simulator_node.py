@@ -26,7 +26,6 @@ Y_MAX = 1
 SCREEN_WIDTH_PX = 480
 SCREEN_HEIGHT_PX = 480
 
-
 def pos_to_pixels(pos):
     """ Convert from meters to screen position. """
     x = int((pos[0] - X_MIN) * (SCREEN_WIDTH_PX)/(X_MAX - X_MIN))
@@ -52,6 +51,8 @@ class SimulatorNode(Node):
 
     command_duration_timer_s = 0
     command_duration_s = 0
+
+    position_history = []
 
     def __init__(self):
 
@@ -84,10 +85,12 @@ class SimulatorNode(Node):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH_PX,
                                                SCREEN_HEIGHT_PX))
         self.refresh_rate = 100
-        pygame.display.set_caption('FRIPS Visualizer')
+        pygame.display.set_caption('FRIPS Simulator')
 
         self.screen.fill((0, 0, 255))
         pygame.display.update()
+
+        self.position_history = []
 
 
 
@@ -124,6 +127,9 @@ class SimulatorNode(Node):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.destroy_timer(self.timer)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.position_history = []
 
         self.screen.fill((0, 0, 255))
 
@@ -156,6 +162,15 @@ class SimulatorNode(Node):
 
         pygame.draw.line(self.screen, (255, 0, 0), pos_to_pixels(self.center_beacon_pos_estimate), line_end_coord(self.center_beacon_pos_estimate, HEADING_LINE_LENGTH_M, self.rover_heading_angle_estimate_deg))
         pygame.draw.line(self.screen, (0, 255, 0), pos_to_pixels(self.center_beacon_pos_estimate), line_end_coord(self.center_beacon_pos_estimate, HEADING_LINE_LENGTH_M, heading_angle_deg))
+
+        self.position_history.append(self.center_beacon_pos_estimate)
+
+        for i, position in enumerate(self.position_history):
+            # if i != len(self.position_history) - 1:
+            #     pygame.draw.circle(self.screen, (255, 255, 255), pos_to_pixels(position), 5)
+            if i != 0:
+                previous_position = self.position_history[i - 1]
+                pygame.draw.line(self.screen, (255, 255, 255), pos_to_pixels(previous_position), pos_to_pixels(position))
 
         msg = HedgePositionAngle()
         x_m, y_m = self.center_beacon_pos_estimate

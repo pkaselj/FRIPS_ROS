@@ -46,6 +46,8 @@ class VisualizerNode(Node):
     setpoint_pos = (0, 0)
     heading_angle_deg = 0
 
+    position_history = []
+
     def __init__(self):
 
         # Initializing the node and setting up subscriptions
@@ -77,10 +79,12 @@ class VisualizerNode(Node):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH_PX,
                                                SCREEN_HEIGHT_PX))
         self.refresh_rate = 100
-        pygame.display.set_caption('FRIPS Simulator')
+        pygame.display.set_caption('FRIPS Visualizer')
 
         self.screen.fill((0, 0, 255))
         pygame.display.update()
+
+        self.position_history = []
 
         # load and prep arrow image.
         # arrow_file = roslib.packages.resource_file('skibot', 'images',
@@ -123,6 +127,9 @@ class VisualizerNode(Node):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.destroy_timer(self.timer)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.position_history = []
 
         self.screen.fill((0, 0, 255))
 
@@ -132,6 +139,16 @@ class VisualizerNode(Node):
         # pygame.draw.circle(self.screen, (255, 0, 0), self.left_beacon_pos, 2)
         # pygame.draw.circle(self.screen, (255, 0, 0), self.right_beacon_pos, 2)
         # pygame.draw.circle(self.screen, (255, 0, 0), self.center_beacon_pos, 2)
+
+        self.position_history.append(self.center_beacon_pos_estimate)
+        
+        for i, position in enumerate(self.position_history):
+            # if i != len(self.position_history) - 1:
+            #     pygame.draw.circle(self.screen, (255, 255, 255), pos_to_pixels(position), 5)
+            if i != 0:
+                previous_position = self.position_history[i - 1]
+                pygame.draw.line(self.screen, (255, 255, 255), pos_to_pixels(previous_position), pos_to_pixels(position))
+
 
         pygame.draw.circle(self.screen, (255, 0, 0), pos_to_pixels(self.center_beacon_pos_estimate), 5)
         pygame.draw.circle(self.screen, (0, 255, 0), pos_to_pixels(self.setpoint_pos), 5)

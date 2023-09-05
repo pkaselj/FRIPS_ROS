@@ -36,7 +36,7 @@ rover_controller_node:
     position_topic: /position_estimate
     setpoint_topic: /position_setpoint
     publish_rate_ms: 250
-    max_speed_magnitude: 0.07
+    max_speed_magnitude: 0.5
 
 rover_fwd_kinm_node:
   ros__parameters:
